@@ -141,6 +141,11 @@
             ],
             "group": "build",
             "detail": "compiler: C:/raylib/w64devkit/bin/g++.exe"
-        }
+        },
+        {
+            "label": "build simple",
+            "type": "process",
+            "command": "g++ main.cpp leaderboard.cpp -lraylib -lGL -lm -lpthread -ldl -lrt -lX11",
+        },
     ]
 }
