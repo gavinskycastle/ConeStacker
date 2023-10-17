@@ -115,7 +115,7 @@ int scorePlacement(int score) {
     
     int index = 0;
     
-    for (int i = 0; i < scores.size(); ++i) {
+    for (long unsigned int i = 0; i < scores.size(); ++i) {
         if (scores[i] > score) {
             index = i + 1;
         }
