@@ -91,6 +91,8 @@ const int screenHeight = 480;
 Sound coneFall = LoadSound("../assets/coneFall.ogg");
 Sound coneDrop = LoadSound("../assets/coneDrop.ogg");
 
+Texture2D nateImage = LoadTextureFromImage(LoadImage("../assets/nate.png"));
+
 // Define the camera to look into our 3d world
 Camera3D camera = { 0 };
 
@@ -237,6 +239,11 @@ bool app_loop() {
             }
             case PLAY: {
                 DrawTextCentered(std::to_string(coneYs.size()-1).c_str(), screenWidth/2, 10, 50, BLACK);
+                if (coneYs.size()-1 == 5) {
+                    // Draw image of Nate
+                    DrawTexture(nateImage, screenWidth/2-nateImage.width/2, screenHeight/2-nateImage.height/2, WHITE);
+                    std::cout << "Nate" << std::endl;
+                }
                 break;
             }
             case MAIN_MENU: {
