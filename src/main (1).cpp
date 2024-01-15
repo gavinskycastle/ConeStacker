@@ -40,10 +40,10 @@ enum ConeColor {
 
 
 void DrawCone(Vector3 position, int color) {
-    static Model trafficConeModel = LoadModel("assets/trafficCone/tinker.obj");
-    static Model yellowConeModel = LoadModel("assets/yellowCone/tinker.obj");
-    static Model orangeConeModel = LoadModel("assets/orangeCone/tinker.obj");
-    static Model blueConeModel = LoadModel("assets/blueCone/tinker.obj");
+    static Model trafficConeModel = LoadModel("resources/trafficCone/tinker.obj");
+    static Model yellowConeModel = LoadModel("resources/yellowCone/tinker.obj");
+    static Model orangeConeModel = LoadModel("resources/orangeCone/tinker.obj");
+    static Model blueConeModel = LoadModel("resources/blueCone/tinker.obj");
     
     Model model;
     
@@ -91,12 +91,12 @@ int main(void)
     const int screenHeight = 480;
 
     InitWindow(screenWidth, screenHeight, "Cone Stacker");
-    Image windowIcon = LoadImage("assets/icon.png");
+    Image windowIcon = LoadImage("resources/icon.png");
     SetWindowIcon(windowIcon);
     
     InitAudioDevice();
-    Sound coneFall = LoadSound("assets/coneFall.ogg");
-    Sound coneDrop = LoadSound("assets/coneDrop.ogg");
+    Sound coneFall = LoadSound("resources/coneFall.ogg");
+    Sound coneDrop = LoadSound("resources/coneDrop.ogg");
     
     // Define the camera to look into our 3d world
     Camera3D camera = { 0 };
