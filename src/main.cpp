@@ -91,7 +91,8 @@ const int screenHeight = 480;
 Sound coneFall = LoadSound("../assets/coneFall.ogg");
 Sound coneDrop = LoadSound("../assets/coneDrop.ogg");
 
-Texture2D nateImage = LoadTextureFromImage(LoadImage("../assets/nate.png"));
+Image nateImage;
+Texture2D nateTexture;
 
 // Define the camera to look into our 3d world
 Camera3D camera = { 0 };
@@ -122,6 +123,9 @@ void init_app() {
     camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 
     gameSettings.coneColor = CONE_TRAFFIC;
+    
+    nateImage = LoadImage("../assets/nate.png");
+    nateTexture = LoadTextureFromImage(nateImage);
     
     ResetGame(coneYs, camera, targetFov, floatingCone);
     
@@ -239,10 +243,9 @@ bool app_loop() {
             }
             case PLAY: {
                 DrawTextCentered(std::to_string(coneYs.size()-1).c_str(), screenWidth/2, 10, 50, BLACK);
-                if (coneYs.size()-1 == 5) {
+                if (coneYs.size()-1 == 213) {
                     // Draw image of Nate
-                    DrawTexture(nateImage, screenWidth/2-nateImage.width/2, screenHeight/2-nateImage.height/2, WHITE);
-                    std::cout << "Nate" << std::endl;
+                    DrawTexture(nateTexture, screenWidth/2-nateImage.width/2, screenHeight/2-nateImage.height/2, WHITE);
                 }
                 break;
             }
