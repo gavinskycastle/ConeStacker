@@ -125,6 +125,7 @@ void init_app() {
     gameSettings.coneColor = CONE_TRAFFIC;
     
     nateImage = LoadImage("../assets/nate.png");
+    ImageResize(&nateImage, 576, 432);
     nateTexture = LoadTextureFromImage(nateImage);
     
     ResetGame(coneYs, camera, targetFov, floatingCone);
