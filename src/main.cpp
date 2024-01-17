@@ -127,6 +127,62 @@ void init_app() {
 }
 
 bool app_loop() {
+    // Update
+    UpdateCamera(&camera, CAMERA_ORBITAL);
+    
+    // Update controls
+    switch(gameState) {
+        case GAME_OVER: {
+            floatingCone.fallSpeed += 0.01f;
+            floatingCone.hoverDistance -= floatingCone.fallSpeed;
+            camera.target = (Vector3){floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f};
+            break;
+        }
+        case PLAY: {
+            if (IsKeyPressed(KEY_SPACE)) {
+                if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
+                    coneYs.push_back((Vector3) {0.0f, coneYs.back().y + 1.0f, 0.0f});
+                    
+                    camera.target = coneYs.back();
+                    if (targetFov < 90.0f) {
+                        targetFov += 1.0f;
+                    }
+                    
+                    floatingCone.x = 0.0f;
+                    if (floatingCone.speed < 1.0f) {
+                        floatingCone.speed += 0.025f;
+                    }
+                    PlaySound(coneDrop);
+                } else {
+                gameState = GAME_OVER;
+                score = coneYs.size()-1;
+                PlaySound(coneFall);
+                }
+            }
+            
+            if (floatingCone.toRight) {
+                floatingCone.x += floatingCone.speed;
+                if (floatingCone.x >= 4.0f) {
+                    floatingCone.toRight = false;
+                }
+            } else {
+                floatingCone.x -= floatingCone.speed;
+                if (floatingCone.x <= -4.0f) {
+                    floatingCone.toRight = true;
+                }
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    
+    if (targetFov > camera.fovy) {
+        camera.fovy += 0.1f;
+    } else if (targetFov < camera.fovy) {
+        camera.fovy -= 0.1f;
+    }
     // Draw
     BeginDrawing();
         ClearBackground(LIGHTGRAY);
