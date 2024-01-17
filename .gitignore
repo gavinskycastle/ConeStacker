@@ -7,3 +7,5 @@ game
 a.out
 
 raygui.h
+
+build/

@@ -8,7 +8,7 @@
 #include "../libs/raylib/src/raylib.h"
 
 #ifndef PROJECT_NAME
-#define PROJECT_NAME "UwU"
+#define PROJECT_NAME "Cone Stacker"
 #endif
 
 #ifndef VERSION

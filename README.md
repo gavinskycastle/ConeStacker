@@ -19,6 +19,7 @@
 1. Clone the repository using `git clone https://github.com/gavinskycastle/ConeStacker.git`
 1. Move to the ConeStacker directory `cd ConeStacker`
 1. Install the raylib git submodule using `git submodule update --init --recursive --depth=1`
+1. Install the required build tools (for example on Arch, type `sudo pacman -S cmake make gcc`)
 1. Make a build folder and cd to it with `mkdir build && cd build`
 1. Setup cmake `cmake .. -DCMAKE_BUILD_TYPE=Release`
 1. Run `make` to compile the project

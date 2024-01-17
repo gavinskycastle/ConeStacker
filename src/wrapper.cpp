@@ -21,7 +21,9 @@ int main(void)
 #if defined(PLATFORM_WEB)
     InitWindow(getBrowserWindowWidth(), getBrowserWindowHeight(), PROJECT_NAME);
 #else
-    InitWindow(800, 500, PROJECT_NAME);
+    InitWindow(720, 480, PROJECT_NAME);
+    Image windowIcon = LoadImage("../assets/icon.png");
+    SetWindowIcon(windowIcon);
 #endif
     SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
     init_app();
