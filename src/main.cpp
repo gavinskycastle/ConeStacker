@@ -118,12 +118,12 @@ void init_app() {
     camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
     camera.fovy = 45.0f;                                // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
-    
+
     gameSettings.coneColor = CONE_TRAFFIC;
     
     ResetGame(coneYs, camera, targetFov, floatingCone);
     
-    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
+    SetTargetFPS(60); // Set our game to run at 60 frames-per-second
 }
 
 bool app_loop() {
@@ -261,9 +261,11 @@ bool app_loop() {
         }
     EndDrawing();
     
-    return true;
+    return !windowShouldClose;
 }
 
 void deinit_app() {
-    CloseWindow();
+    UnloadSound(coneFall);
+    UnloadSound(coneDrop);
+    CloseAudioDevice();
 }
