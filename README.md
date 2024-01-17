@@ -1,43 +1,52 @@
-# ConeStacker
+# Cone Stacker
 
-## Building on Windows
+![Native Build](https://github.com/gavinskycastle/ConeStacker/actions/workflows/nativebuild.yml/badge.svg) ![Web Build](https://github.com/gavinskycastle/ConeStacker/actions/workflows/webbuild.yml/badge.svg)
 
-1. Install Raylib
+## Building to Web
 
-Download the official raylib installer and go through the install process:
-https://github.com/raysan5/raylib/releases/download/4.5.0/raylib_installer_v4.5.mingw.64bit.exe
+**You need to install Emscripten** [Download Here!](https://emscripten.org/docs/getting_started/downloads.html)
 
-2. Install Raygui
+1. Clone the repository using Git. Execute this in a terminal: `git clone https://github.com/gavinskycastle/ConeStacker.git`
+2. Cd into ConeStacker. `cd ConeStacker`
+3. Install the required build tools (for example on Arch, type `sudo pacman -S cmake make gcc`)
+4. Install the raylib git submodule using `git submodule update --init --recursive --depth=1`
+5. Make a build folder. Your builds will go here. `mkdir build; cd build`
+6. Setup cmake `emcmake cmake -S .. -D CMAKE_BUILD_TYPE=Release`
+7. Run `cmake --build build` to compile the project
+8. Run a local web server and open the ConeStacker.html
 
-Download a zip of the repository:
-https://github.com/raysan5/raygui/releases/tag/4.0
+## Building (Linux/macOS)
+ 
+1. Clone the repository using `git clone https://github.com/gavinskycastle/ConeStacker.git`
+2. Move to the ConeStacker directory `cd ConeStacker`
+3. Install the raylib git submodule using `git submodule update --init --recursive --depth=1`
+4. Install the required build tools (for example on Arch, type `sudo pacman -S cmake make gcc`)
+5. Make a build folder and cd to it with `mkdir build && cd build`
+6. Setup cmake `cmake .. -DCMAKE_BUILD_TYPE=Release`
+7. Run `make` to compile the project
+8. Make the binary executable `chmod +x ConeStacker`
+9. Run the binary with `./ConeStacker`
 
-Extract to C:/raylib/raygui so that `raylib.h` is located at C:/raylib/raygui/src/raylib.h
+## Building (Windows, MinGW)
 
-## Building on Linux
+**You need to install MinGW. Select make and developer tools in the installer** [Download MinGW here!](https://sourceforge.net/projects/mingw/)
 
-1. Install Raylib build dependencies
+1. Clone the repository using Git. Execute this in a terminal: `git clone https://github.com/gavinskycastle/ConeStacker.git`
+2. Cd into ConeStacker. `cd ConeStacker`
+3. Install the raylib git submodule using `git submodule update --init --recursive --depth=1`
+4. Make a build folder. Your builds will go here. `mkdir build; cd build`
+5. Setup CMake. **Make sure to define MinGW Makefiles if you are using MinGW!** `cmake .. -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"`
+6. Make sure you have mingw32-make. If you do, just run it in the build directory and it will start compiling everything. It won't take long, and once it's finished, then
+7. Run ConeStacker.exe! You have just compiled ConeStacker for Windows using MinGW.
 
-https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux#install-required-libraries
+## Building (Windows, MSVC)
 
-(Not all of them may be necessary, experiment with leaving some out if you desire)
+You need to have Visual Studio 2019 (other versions aren't tested, please tell us if it works for you) with C++ Development selected in the installer.
 
-2. Install `raylib` and `raygui` from your distro's repos or install it manually with this command:
-
-```bash
-sudo bash << END
-wget https://github.com/raysan5/raylib/releases/download/4.5.0/raylib-4.5.0_linux_amd64.tar.gz -P /tmp
-tar -xvaf /tmp/raylib-4.5.0_linux_amd64.tar.gz -C /tmp
-cp -r /tmp/raylib-4.5.0_linux_amd64/{include,lib} /usr/local
-wget https://github.com/raysan5/raygui/raw/25c8c65a6e5f0f4d4b564a0343861898c6f2778b/src/raygui.h -P /usr/local/include
-echo '/usr/local/lib/' > /etc/ld.so.conf.d/raylib-x86_64.conf
-END
-```
-
-Reboot to load the changes to `/etc/ld.so.conf`.
-
-Then run:
-
-```bash
-make
-```
+1. Clone the repository using Git. Execute this in a terminal: `git clone https://github.com/gavinskycastle/ConeStacker.git`
+2. Cd into ConeStacker. `cd ConeStacker`
+3. Install the raylib git submodule using `git submodule update --init --recursive --depth=1`
+4. Make a build folder. Your builds will go here. `mkdir build; cd build`
+5. Setup CMake. `cmake .. -DCMAKE_BUILD_TYPE=Release`
+6. Let's build the project! Run `cmake --build .`
+7. Go into Debug, your build of ConeStacker is there. You have now compiled ConeStacker for Windows using MSVC.
