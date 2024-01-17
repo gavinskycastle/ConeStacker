@@ -64,7 +64,7 @@ void DrawCone(Vector3 position, int color) {
             break;
     }
     
-    DrawModelEx(model, position, (Vector3){1.0f, 0.0f, 0.0f}, -90.0f, (Vector3){0.2f, 0.2f, 0.2f}, WHITE); // Draw cone
+    DrawModelEx(model, position, Vector3{1.0f, 0.0f, 0.0f}, -90.0f, Vector3{0.2f, 0.2f, 0.2f}, WHITE); // Draw cone
 }
 
 void DrawTextCentered(const char* text, int posX, int posY, int fontSize, Color color) {
@@ -74,7 +74,7 @@ void DrawTextCentered(const char* text, int posX, int posY, int fontSize, Color 
 
 void ResetGame(std::vector<Vector3> &coneYs, Camera &camera, float &targetFov, FloatingCone &floatingCone) {
     coneYs.clear();
-    coneYs.push_back((Vector3){0.0f, 0.0f, 0.0f});
+    coneYs.push_back(Vector3{0.0f, 0.0f, 0.0f});
     floatingCone.x = 0.0f;
     floatingCone.speed = 0.2f;
     floatingCone.fallSpeed = 0.0f;
@@ -113,9 +113,9 @@ std::vector<int> leaderboardScores;
     
 void init_app() {
     InitAudioDevice();
-    camera.position = (Vector3){ 10.0f, 10.0f, 10.0f }; // Camera position
-    camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
-    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+    camera.position = Vector3{ 10.0f, 10.0f, 10.0f }; // Camera position
+    camera.target = Vector3{ 0.0f, 0.0f, 0.0f };      // Camera looking at point
+    camera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
     camera.fovy = 45.0f;                                // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 
@@ -135,13 +135,13 @@ bool app_loop() {
         case GAME_OVER: {
             floatingCone.fallSpeed += 0.01f;
             floatingCone.hoverDistance -= floatingCone.fallSpeed;
-            camera.target = (Vector3){floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f};
+            camera.target = Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f};
             break;
         }
         case PLAY: {
             if (IsKeyPressed(KEY_SPACE)) {
                 if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
-                    coneYs.push_back((Vector3) {0.0f, coneYs.back().y + 1.0f, 0.0f});
+                    coneYs.push_back(Vector3 {0.0f, coneYs.back().y + 1.0f, 0.0f});
                     
                     camera.target = coneYs.back();
                     if (targetFov < 90.0f) {
@@ -188,14 +188,14 @@ bool app_loop() {
         ClearBackground(LIGHTGRAY);
         BeginMode3D(camera);
             
-            DrawCube((Vector3){1.5f, -5.0f, 1.5f}, 5.0f, 10.0f, 5.0f, GRAY);
+            DrawCube(Vector3{1.5f, -5.0f, 1.5f}, 5.0f, 10.0f, 5.0f, GRAY);
             
             std::for_each (coneYs.begin(), coneYs.end(), [&](Vector3 coneY)
             {
                 DrawCone(coneY, gameSettings.coneColor);
             });
             
-            DrawCone((Vector3){floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, gameSettings.coneColor);
+            DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, gameSettings.coneColor);
 
         EndMode3D();
         
@@ -207,27 +207,27 @@ bool app_loop() {
                 if (checkScore(score)) {
                     DrawTextCentered("Enter your name to submit your high score", screenWidth/2, screenHeight/2+8, 16, BLACK);
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
-                    if (GuiTextBox((Rectangle){screenWidth/2-60, screenHeight/2+32, 120, 24}, highScoreName, 16, highScoreEditMode)) {
+                    if (GuiTextBox(Rectangle{screenWidth/2-60, screenHeight/2+32, 120, 24}, highScoreName, 16, highScoreEditMode)) {
                         highScoreEditMode = !highScoreEditMode;
                     }
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
-                    if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2+75, 200, 50}, "Play Again") == 1) {
+                    if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+75, 200, 50}, "Play Again") == 1) {
                         gameState = PLAY;
                         ResetGame(coneYs, camera, targetFov, floatingCone);
                         saveScore(highScoreName, score);
                     };
-                    if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2+135, 200, 50}, "Main Menu") == 1) {
+                    if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+135, 200, 50}, "Main Menu") == 1) {
                         gameState = MAIN_MENU;
                         ResetGame(coneYs, camera, targetFov, floatingCone);
                         saveScore(highScoreName, score);
                     };
                 } else {
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
-                    if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2+25, 200, 50}, "Play Again") == 1) {
+                    if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+25, 200, 50}, "Play Again") == 1) {
                         gameState = PLAY;
                         ResetGame(coneYs, camera, targetFov, floatingCone);
                     };
-                    if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2+85, 200, 50}, "Main Menu") == 1) {
+                    if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+85, 200, 50}, "Main Menu") == 1) {
                         gameState = MAIN_MENU;
                         ResetGame(coneYs, camera, targetFov, floatingCone);
                     };
@@ -243,21 +243,21 @@ bool app_loop() {
                 DrawTextCentered("Cone Stacker", screenWidth/2, screenHeight/2-125, 50, BLACK);
                 
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
-                if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2-50, 200, 50}, "Play") == 1) {
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2-50, 200, 50}, "Play") == 1) {
                     gameState = PLAY;
                     ResetGame(coneYs, camera, targetFov, floatingCone);
                 };
-                if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
                     gameState = LEADER_BOARD;
                     leaderboardNames = getNames();
                     if (leaderboardNames.size() > 10) leaderboardNames.erase(leaderboardNames.begin()+10, leaderboardNames.end());
                     leaderboardScores = getScores();
                     if (leaderboardScores.size() > 10) leaderboardScores.erase(leaderboardScores.begin()+10, leaderboardScores.end());
                 };
-                if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2+70, 200, 50}, "Options") == 1) {
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+70, 200, 50}, "Options") == 1) {
                     gameState = OPTIONS;
                 };
-                if (GuiButton((Rectangle) {screenWidth/2-100, screenHeight/2+130, 200, 50}, "Exit") == 1) {
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+130, 200, 50}, "Exit") == 1) {
                     windowShouldClose = true;
                 };
                 
@@ -267,19 +267,19 @@ bool app_loop() {
             case OPTIONS: {
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
                 
-                GuiGroupBox((Rectangle){37, 50, 640, 400}, "Options");
+                GuiGroupBox(Rectangle{37, 50, 640, 400}, "Options");
                 
-                GuiLabel((Rectangle){62, 65, 120, 25}, "Cone Color");
-                GuiToggleGroup((Rectangle){62, 90, 150, 25}, "Traffic;Yellow;Orange;Blue", &gameSettings.coneColor);
+                GuiLabel(Rectangle{62, 65, 120, 25}, "Cone Color");
+                GuiToggleGroup(Rectangle{62, 90, 150, 25}, "Traffic;Yellow;Orange;Blue", &gameSettings.coneColor);
                 
-                GuiLabel((Rectangle) {207, 170, 100, 25}, "SFX Volume");
-                GuiSliderBar((Rectangle){302, 175, 120, 16}, NULL, NULL, &gameSettings.sfxVolume, 0, 1);
-                GuiLabel((Rectangle){432, 170, 35, 25}, (std::to_string((int)(gameSettings.sfxVolume*100)) + "%").c_str());
+                GuiLabel(Rectangle {207, 170, 100, 25}, "SFX Volume");
+                GuiSliderBar(Rectangle{302, 175, 120, 16}, NULL, NULL, &gameSettings.sfxVolume, 0, 1);
+                GuiLabel(Rectangle{432, 170, 35, 25}, (std::to_string((int)(gameSettings.sfxVolume*100)) + "%").c_str());
                 
                 SetSoundVolume(coneDrop, gameSettings.sfxVolume);
                 SetSoundVolume(coneFall, gameSettings.sfxVolume);
                 
-                if (GuiButton((Rectangle){282, 410, 150, 25}, "Back to Main Menu") == 1) {
+                if (GuiButton(Rectangle{282, 410, 150, 25}, "Back to Main Menu") == 1) {
                     gameState = MAIN_MENU;
                 }
                 break;
@@ -287,29 +287,29 @@ bool app_loop() {
             case LEADER_BOARD: {
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
                 
-                GuiGroupBox((Rectangle){37, 50, 640, 400}, "Leaderboard");
+                GuiGroupBox(Rectangle{37, 50, 640, 400}, "Leaderboard");
                 
-                GuiLabel((Rectangle){92, 65, 120, 25}, "Name");
+                GuiLabel(Rectangle{92, 65, 120, 25}, "Name");
                 
                 DrawLine(87, 65, 87, 400, BLACK);
                 DrawLine(540, 65, 540, 400, BLACK);
                 
-                GuiLabel((Rectangle){545, 65, 120, 25}, "Score");
+                GuiLabel(Rectangle{545, 65, 120, 25}, "Score");
                 
                 DrawLine(62, 95, 640, 95, BLACK);
                 
                 float yValue = 100.0f;
                 for (std::string name : leaderboardNames) {
-                    GuiLabel((Rectangle){92, yValue, 150, 25}, name.c_str());
+                    GuiLabel(Rectangle{92, yValue, 150, 25}, name.c_str());
                     yValue += 30.0f;
                 }
                 yValue = 100.0f;
                 for (int score : leaderboardScores) {
-                    GuiLabel((Rectangle){545, yValue, 150, 25}, std::to_string(score).c_str());
+                    GuiLabel(Rectangle{545, yValue, 150, 25}, std::to_string(score).c_str());
                     yValue += 30.0f;
                 }
                 
-                if (GuiButton((Rectangle){282, 410, 150, 25}, "Back to Main Menu") == 1) {
+                if (GuiButton(Rectangle{282, 410, 150, 25}, "Back to Main Menu") == 1) {
                     gameState = MAIN_MENU;
                 }
                 break;
