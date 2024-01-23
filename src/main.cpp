@@ -88,8 +88,8 @@ void ResetGame(std::vector<Vector3> &coneYs, Camera &camera, float &targetFov, F
 const int screenWidth = 720;
 const int screenHeight = 480;
 
-Sound coneFall = LoadSound("../assets/coneFall.ogg");
-Sound coneDrop = LoadSound("../assets/coneDrop.ogg");
+Sound coneFall;
+Sound coneDrop;
 
 Image nateImage;
 Texture2D nateTexture;
@@ -116,6 +116,9 @@ std::vector<int> leaderboardScores;
     
 void init_app() {
     InitAudioDevice();
+    coneFall = LoadSound("../assets/coneFall.ogg");
+    coneDrop = LoadSound("../assets/coneDrop.ogg");
+    
     camera.position = Vector3{ 10.0f, 10.0f, 10.0f }; // Camera position
     camera.target = Vector3{ 0.0f, 0.0f, 0.0f };      // Camera looking at point
     camera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
@@ -166,7 +169,6 @@ bool app_loop() {
                 PlaySound(coneFall);
                 }
             }
-            
             if (floatingCone.toRight) {
                 floatingCone.x += floatingCone.speed;
                 if (floatingCone.x >= 4.0f) {
