@@ -23,6 +23,7 @@ struct FloatingCone {
 struct GameSettings {
     int coneColor;
     float sfxVolume = 1.0f;
+    bool enableTouchscreenControls = false;
 };
 
 enum GameState {
@@ -149,7 +150,7 @@ bool app_loop() {
             break;
         }
         case PLAY: {
-            if (IsKeyPressed(KEY_SPACE)) {
+            if ((IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls) || (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameSettings.enableTouchscreenControls)) {
                 if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
                     coneYs.push_back(Vector3 {0.0f, coneYs.back().y + 1.0f, 0.0f});
                     
@@ -288,6 +289,8 @@ bool app_loop() {
                 GuiLabel(Rectangle {207, 170, 100, 25}, "SFX Volume");
                 GuiSliderBar(Rectangle{302, 175, 120, 16}, NULL, NULL, &gameSettings.sfxVolume, 0, 1);
                 GuiLabel(Rectangle{432, 170, 35, 25}, (std::to_string((int)(gameSettings.sfxVolume*100)) + "%").c_str());
+                
+                GuiCheckBox(Rectangle{62, 130, 25, 25}, "Enable Touchscreen Controls", &gameSettings.enableTouchscreenControls);
                 
                 SetSoundVolume(coneDrop, gameSettings.sfxVolume);
                 SetSoundVolume(coneFall, gameSettings.sfxVolume);

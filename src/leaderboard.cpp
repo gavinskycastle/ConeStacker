@@ -10,10 +10,10 @@
 std::ofstream oScoreFile;
 std::ifstream iScoreFile;
 
-const char * scoreFileLocation = "save/leaderboard";
+const char * scoreFileLocation = "../save/leaderboard";
 
 void open_oScoreFile() {
-    std::filesystem::create_directory("save");
+    std::filesystem::create_directory("../save");
     
     oScoreFile = std::ofstream(scoreFileLocation);
 }
