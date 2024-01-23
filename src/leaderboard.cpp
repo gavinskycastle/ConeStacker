@@ -10,10 +10,19 @@
 std::ofstream oScoreFile;
 std::ifstream iScoreFile;
 
-const char * scoreFileLocation = "../save/leaderboard";
+// Set save location to /save/leaderboard instead if on web
+#if defined(PLATFORM_WEB)
+    const char * scoreFileLocation = "save/leaderboard";
+#else
+    const char * scoreFileLocation = "../save/leaderboard";
+#endif
 
 void open_oScoreFile() {
-    std::filesystem::create_directory("../save");
+    #if defined(PLATFORM_WEB)
+        std::filesystem::create_directory("save");
+    #else
+        std::filesystem::create_directory("../save");
+    #endif
     
     oScoreFile = std::ofstream(scoreFileLocation);
 }
