@@ -139,6 +139,11 @@ bool checkScore(int score) {
 }
 
 void saveScore(const char * name, int score) {
+    // Remove commas from name
+    std::string nameString = name;
+    nameString.erase(std::remove(nameString.begin(), nameString.end(), ','), nameString.end());
+    name = nameString.c_str();
+    
     std::stringstream sScoreFileEntry;
     
     sScoreFileEntry << name << "," << std::to_string(score) << "," << std::to_string(std::time(0));
