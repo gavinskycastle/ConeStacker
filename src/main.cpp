@@ -271,9 +271,12 @@ bool app_loop() {
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+70, 200, 50}, "Options") == 1) {
                     gameState = OPTIONS;
                 };
-                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+130, 200, 50}, "Exit") == 1) {
-                    windowShouldClose = true;
-                };
+                // Hide exit button on web
+                #if !defined(PLATFORM_WEB)
+                    if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+130, 200, 50}, "Exit") == 1) {
+                        windowShouldClose = true;
+                    };
+                #endif
                 
                 DrawText("Made by Gavin P", 5, screenHeight-20, 15, BLACK);
                 break;
