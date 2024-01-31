@@ -146,6 +146,9 @@ void init_app() {
     
     ImageResize(&nateImage, 576, 432);
     nateTexture = LoadTextureFromImage(nateImage);
+    classicIconTexture = LoadTextureFromImage(classicIcon);
+    //arcadeIconTexture = LoadTextureFromImage(arcadeIcon);
+    //rhythmIconTexture = LoadTextureFromImage(rhythmIcon);
     
     ResetGame(coneYs, camera, targetFov, floatingCone);
     
@@ -320,7 +323,7 @@ bool app_loop() {
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+130, 200, 50}, "Back") == 1) {
                     gameState = MAIN_MENU;
                 };
-                DrawTexture(classicIconTexture, screenWidth/2-100, screenHeight/2-50, WHITE);
+                DrawTexture(classicIconTexture, screenWidth/2-100+25, screenHeight/2-50+7, WHITE);
                 //DrawTexture(arcadeIconTexture, screenWidth/2-100, screenHeight/2+10, WHITE);
                 //DrawTexture(rhythmIconTexture, screenWidth/2-100, screenHeight/2+70, WHITE);
                 
