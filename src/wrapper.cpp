@@ -21,11 +21,11 @@ int main(void)
 #if defined(PLATFORM_WEB)
     InitWindow(getBrowserWindowWidth(), getBrowserWindowHeight(), PROJECT_NAME);
 #else
-    InitWindow(720, 480, "Cone Stacker");
+    InitWindow(1920, 1080, "Cone Stacker");
     Image windowIcon = LoadImage("../assets/icon.png");
     SetWindowIcon(windowIcon);
 #endif
-    // SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
+    SetWindowState(FLAG_WINDOW_MAXIMIZED);
     init_app();
 
 #if defined(PLATFORM_WEB)
