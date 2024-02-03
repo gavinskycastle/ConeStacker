@@ -10,8 +10,6 @@
 #include <string>
 #include <iostream>
 
-#include "leaderboard.hpp"
-
 struct FloatingCone {
     float x;
     float speed;
@@ -21,7 +19,6 @@ struct FloatingCone {
 };
 
 struct GameSettings {
-    int coneColor;
     float sfxVolume = 1.0f;
     bool enableTouchscreenControls = false;
 };
@@ -31,14 +28,7 @@ enum GameState {
     GAME_OVER
 };
 
-enum ConeColor {
-    CONE_TRAFFIC,
-    CONE_YELLOW,
-    CONE_ORANGE,
-    CONE_BLUE
-};
-
-void DrawCone(Vector3 position, int color) {
+void DrawCone(Vector3 position) {
     static Model model = LoadModel("../assets/trafficCone/tinker.obj");
     
     DrawModelEx(model, position, Vector3{1.0f, 0.0f, 0.0f}, -90.0f, Vector3{0.2f, 0.2f, 0.2f}, WHITE); // Draw cone
@@ -85,9 +75,6 @@ int score = 0;
 bool highScoreEditMode = false;
 char highScoreName[17] = "";
 
-std::vector<std::string> leaderboardNames;
-std::vector<int> leaderboardScores;
-
 int mouseTimer;
 int oneTimeMouseTimer;
     
@@ -101,8 +88,6 @@ void init_app() {
     camera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
     camera.fovy = 45.0f;                                // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
-
-    gameSettings.coneColor = CONE_TRAFFIC;
     
     ResetGame(coneYs, camera, targetFov, floatingCone);
     
@@ -192,10 +177,10 @@ bool app_loop() {
             
             std::for_each (coneYs.begin(), coneYs.end(), [&](Vector3 coneY)
             {
-                DrawCone(coneY, gameSettings.coneColor);
+                DrawCone(coneY);
             });
             
-            DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, gameSettings.coneColor);
+            DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f});
 
         EndMode3D();
         
