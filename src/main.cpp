@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 
-#include "leaderboard.hpp"
+#include "scouting_leaderboard.hpp"
 
 struct FloatingCone {
     float x;
