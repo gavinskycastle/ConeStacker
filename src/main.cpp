@@ -141,11 +141,14 @@ bool app_loop() {
     // Update
     UpdateCamera(&camera, CAMERA_ORBITAL);
     
+    // Calculate delta time in relation to 60 frames per second
+    float relDt = GetFrameTime() * 60.0f;
+    
     // Update controls
     switch(gameState) {
         case GAME_OVER: {
-            floatingCone.fallSpeed += 0.01f;
-            floatingCone.hoverDistance -= floatingCone.fallSpeed;
+            floatingCone.fallSpeed += 0.01f * relDt; // Change by deltatime
+            floatingCone.hoverDistance -= floatingCone.fallSpeed * relDt; // Change by deltatime
             camera.target = Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f};
             break;
         }
@@ -156,7 +159,7 @@ bool app_loop() {
                     
                     camera.target = coneYs.back();
                     if (targetFov < 90.0f) {
-                        targetFov += 1.0f;
+                        targetFov += 1.0f * relDt; // Change by deltatime
                     }
                     
                     floatingCone.x = 0.0f;
@@ -171,12 +174,12 @@ bool app_loop() {
                 }
             }
             if (floatingCone.toRight) {
-                floatingCone.x += floatingCone.speed;
+                floatingCone.x += floatingCone.speed * relDt; // Change by deltatime
                 if (floatingCone.x >= 4.0f) {
                     floatingCone.toRight = false;
                 }
             } else {
-                floatingCone.x -= floatingCone.speed;
+                floatingCone.x -= floatingCone.speed * relDt; // Change by deltatime
                 if (floatingCone.x <= -4.0f) {
                     floatingCone.toRight = true;
                 }
