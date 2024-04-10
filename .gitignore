@@ -1,0 +1,11 @@
+*.exe
+*.dsym
+main
+game
+/save/*
+
+a.out
+
+raygui.h
+
+build/
