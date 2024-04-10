@@ -1,4 +1,4 @@
-# Cone Stacker
+# Cone Stacker 2
 
 ![Native Build](https://github.com/gavinskycastle/ConeStacker/actions/workflows/nativebuild.yml/badge.svg) ![Web Build](https://github.com/gavinskycastle/ConeStacker/actions/workflows/webbuild.yml/badge.svg)
 
