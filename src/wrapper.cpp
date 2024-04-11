@@ -21,7 +21,7 @@ int main(void)
 #if defined(PLATFORM_WEB)
     InitWindow(getBrowserWindowWidth(), getBrowserWindowHeight(), PROJECT_NAME);
 #else
-    InitWindow(720, 480, "Cone Stacker");
+    InitWindow(720, 480, "Cone Stacker 2");
     Image windowIcon = LoadImage("../assets/icon.png");
     SetWindowIcon(windowIcon);
 #endif

@@ -257,7 +257,8 @@ bool app_loop() {
                 break;
             }
             case MAIN_MENU: {
-                DrawTextCentered("Cone Stacker", screenWidth/2, screenHeight/2-125, 50, BLACK);
+                DrawTextCentered("Cone Stacker", screenWidth/2-35, screenHeight/2-125, 50, BLACK);
+                DrawTextCentered("2", screenWidth/2+180, screenHeight/2-145, 75, BLACK);
                 
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2-50, 200, 50}, "Play") == 1) {
