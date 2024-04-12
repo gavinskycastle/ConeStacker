@@ -27,9 +27,12 @@ struct GameSettings {
 };
 
 enum GameState {
-    PLAY,
+    PLAY_CLASSIC,
+    PLAY_ARCADE,
+    PLAY_RHYTHM,
     GAME_OVER,
     MAIN_MENU,
+    PLAY_MENU,
     OPTIONS,
     LEADER_BOARD,
 };
@@ -93,7 +96,14 @@ Sound coneFall;
 Sound coneDrop;
 
 Image nateImage;
+Image classicIcon;
+Image arcadeIcon;
+Image rhythmIcon;
+
 Texture2D nateTexture;
+Texture2D classicIconTexture;
+Texture2D arcadeIconTexture;
+Texture2D rhythmIconTexture;
 
 // Define the camera to look into our 3d world
 Camera3D camera = { 0 };
@@ -129,8 +139,16 @@ void init_app() {
     gameSettings.coneColor = CONE_TRAFFIC;
     
     nateImage = LoadImage("../assets/nate.png");
+    
+    classicIcon = LoadImage("../assets/icons/classic.png");
+    //arcadeIcon = LoadImage("../assets/icons/arcade.png");
+    //rhythmIcon = LoadImage("../assets/icons/rhythm.png");
+    
     ImageResize(&nateImage, 576, 432);
     nateTexture = LoadTextureFromImage(nateImage);
+    classicIconTexture = LoadTextureFromImage(classicIcon);
+    //arcadeIconTexture = LoadTextureFromImage(arcadeIcon);
+    //rhythmIconTexture = LoadTextureFromImage(rhythmIcon);
     
     ResetGame(coneYs, camera, targetFov, floatingCone);
     
@@ -152,7 +170,7 @@ bool app_loop() {
             camera.target = Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f};
             break;
         }
-        case PLAY: {
+        case PLAY_CLASSIC: {
             if ((IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls) || (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameSettings.enableTouchscreenControls)) {
                 if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
                     coneYs.push_back(Vector3 {0.0f, coneYs.back().y + 1.0f, 0.0f});
@@ -225,7 +243,7 @@ bool app_loop() {
                     }
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+75, 200, 50}, "Play Again") == 1) {
-                        gameState = PLAY;
+                        gameState = PLAY_CLASSIC;
                         ResetGame(coneYs, camera, targetFov, floatingCone);
                         saveScore(highScoreName, score);
                     };
@@ -237,7 +255,7 @@ bool app_loop() {
                 } else {
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+25, 200, 50}, "Play Again") == 1) {
-                        gameState = PLAY;
+                        gameState = PLAY_CLASSIC;
                         ResetGame(coneYs, camera, targetFov, floatingCone);
                     };
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+85, 200, 50}, "Main Menu") == 1) {
@@ -248,12 +266,18 @@ bool app_loop() {
                 
                 break;
             }
-            case PLAY: {
+            case PLAY_CLASSIC: {
                 DrawTextCentered(std::to_string(coneYs.size()-1).c_str(), screenWidth/2, 10, 50, BLACK);
                 if (coneYs.size()-1 == 213) {
                     // Draw image of Nate
                     DrawTexture(nateTexture, screenWidth/2-nateImage.width/2, screenHeight/2-nateImage.height/2, WHITE);
                 }
+                break;
+            }
+            case PLAY_ARCADE: {
+                break;
+            }
+            case PLAY_RHYTHM: {
                 break;
             }
             case MAIN_MENU: {
@@ -262,7 +286,7 @@ bool app_loop() {
                 
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2-50, 200, 50}, "Play") == 1) {
-                    gameState = PLAY;
+                    gameState = PLAY_MENU;
                     ResetGame(coneYs, camera, targetFov, floatingCone);
                 };
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
@@ -281,6 +305,33 @@ bool app_loop() {
                         windowShouldClose = true;
                     };
                 #endif
+                
+                DrawText("Made by Gavin P", 5, screenHeight-20, 15, BLACK);
+                break;
+            }
+            case PLAY_MENU: {
+                DrawTextCentered("Cone Stacker", screenWidth/2-35, screenHeight/2-125, 50, BLACK);
+                DrawTextCentered("2", screenWidth/2+180, screenHeight/2-145, 75, BLACK);
+                
+                GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2-50, 200, 50}, "  Classic") == 1) {
+                    gameState = PLAY_CLASSIC;
+                    ResetGame(coneYs, camera, targetFov, floatingCone);
+                };
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+10, 200, 50}, "  Arcade") == 1) {
+                    gameState = PLAY_ARCADE;
+                    ResetGame(coneYs, camera, targetFov, floatingCone);
+                };
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+70, 200, 50}, "  Rhythm") == 1) {
+                    gameState = PLAY_RHYTHM;
+                    ResetGame(coneYs, camera, targetFov, floatingCone);
+                };
+                if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+130, 200, 50}, "Back") == 1) {
+                    gameState = MAIN_MENU;
+                };
+                DrawTexture(classicIconTexture, screenWidth/2-100+25, screenHeight/2-50+7, WHITE);
+                //DrawTexture(arcadeIconTexture, screenWidth/2-100, screenHeight/2+10, WHITE);
+                //DrawTexture(rhythmIconTexture, screenWidth/2-100, screenHeight/2+70, WHITE);
                 
                 DrawText("Made by Gavin P", 5, screenHeight-20, 15, BLACK);
                 break;
