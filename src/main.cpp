@@ -95,6 +95,7 @@ void init_app() {
     oneTimeMouseTimer = 0;
     
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second
+    ToggleFullscreen();
 }
 
 bool app_loop() {
