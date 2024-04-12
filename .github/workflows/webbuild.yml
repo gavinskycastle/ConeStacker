@@ -137,7 +137,7 @@ jobs:
     - name: Rename html file
       run: |
           cd build/
-          mv ConeStacker.html index.html
+          mv ConeStacker2.html index.html
           cd ../
       shell: bash
     
