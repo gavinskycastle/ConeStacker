@@ -1,6 +1,5 @@
 #include "../libs/raylib/src/raylib.h"
 #include "helper.hpp"
-#include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "../libs/raygui/src/raygui.h"
@@ -18,12 +17,6 @@ struct FloatingCone {
     float hoverDistance;
     float fallSpeed;
     bool toRight;
-};
-
-struct GameSettings {
-    int coneColor;
-    float sfxVolume = 1.0f;
-    bool enableTouchscreenControls = false;
 };
 
 enum GameState {
@@ -44,6 +37,13 @@ enum ConeColor {
     CONE_BLUE,
     ARCADE_CONE_GOLD,
     ARCADE_CONE_RED,
+};
+
+struct GameSettings {
+    ConeColor coneColor;
+    int coneColorIndex = 0;
+    float sfxVolume = 1.0f;
+    bool enableTouchscreenControls = false;
 };
 
 void DrawCone(Vector3 position, int color) {
@@ -98,6 +98,7 @@ void ResetGame(std::vector<Vector3> &coneYs, Camera &camera, float &targetFov, F
     targetFov = 45.0f;
     floatingCone.hoverDistance = 4.0f;
     arcadeConeColors.clear();
+    arcadeConeColors.push_back(CONE_TRAFFIC);
     arcadeConeColor = CONE_TRAFFIC;
 }
 
@@ -105,7 +106,28 @@ void addNewArcadeCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arca
     arcadeConeColors.push_back(arcadeConeColor);
     coneYs.push_back(Vector3{0.0f, coneYs.back().y + 1.0f, 0.0f});
     
-    arcadeConeColor = static_cast<ConeColor>(rand() % 6);
+    int randomNumber = rand() % 100;
+    
+    if (randomNumber < 23) {
+        arcadeConeColor = CONE_TRAFFIC;
+    } else if (randomNumber < 46) {
+        arcadeConeColor = CONE_YELLOW;
+    } else if (randomNumber < 69) {
+        arcadeConeColor = CONE_ORANGE;
+    } else if (randomNumber < 92) {
+        arcadeConeColor = CONE_BLUE;
+    } else if (randomNumber < 96) {
+        arcadeConeColor = ARCADE_CONE_GOLD;
+    } else {
+        arcadeConeColor = ARCADE_CONE_RED;
+    }
+}
+
+void addNewClassicCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arcadeConeColors, ConeColor &arcadeConeColor, GameSettings &gameSettings) {
+    arcadeConeColors.push_back(gameSettings.coneColor);
+    coneYs.push_back(Vector3 {0.0f, coneYs.back().y + 1.0f, 0.0f});
+    
+    arcadeConeColor = gameSettings.coneColor;
 }
 
 // Initialization
@@ -135,11 +157,11 @@ bool windowShouldClose = false;
 FloatingCone floatingCone;
 GameSettings gameSettings;
 
-GameState previousGameState = MAIN_MENU;
 GameState gameState = MAIN_MENU;
+GameState gameOverReturnState = PLAY_CLASSIC;
 std::vector<Vector3> coneYs;
-std::vector<ConeColor> arcadeConeColors;
-ConeColor arcadeConeColor = CONE_TRAFFIC;
+std::vector<ConeColor> coneColors = {CONE_TRAFFIC};
+ConeColor coneColor = CONE_TRAFFIC;
 
 int score = 0;
 bool highScoreEditMode = false;
@@ -173,7 +195,7 @@ void init_app() {
     arcadeIconTexture = LoadTextureFromImage(arcadeIcon);
     rhythmIconTexture = LoadTextureFromImage(rhythmIcon);
     
-    ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+    ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
     
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second
 }
@@ -196,7 +218,7 @@ bool app_loop() {
         case PLAY_CLASSIC: {
             if ((IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls) || (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameSettings.enableTouchscreenControls)) {
                 if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
-                    coneYs.push_back(Vector3 {0.0f, coneYs.back().y + 1.0f, 0.0f});
+                    addNewClassicCone(coneYs, coneColors, coneColor, gameSettings);
                     
                     camera.target = coneYs.back();
                     if (targetFov < 90.0f) {
@@ -209,7 +231,6 @@ bool app_loop() {
                     }
                     PlaySound(coneDrop);
                 } else {
-                previousGameState = gameState;
                 gameState = GAME_OVER;
                 score = coneYs.size()-1;
                 PlaySound(coneFall);
@@ -230,7 +251,7 @@ bool app_loop() {
         } case PLAY_ARCADE: {
             if ((IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls) || (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameSettings.enableTouchscreenControls)) {
                 if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
-                    addNewArcadeCone(coneYs, arcadeConeColors, arcadeConeColor);
+                    addNewArcadeCone(coneYs, coneColors, coneColor);
                     
                     camera.target = coneYs.back();
                     if (targetFov < 90.0f) {
@@ -238,12 +259,11 @@ bool app_loop() {
                     }
                     
                     floatingCone.x = 0.0f;
-                    if (floatingCone.speed < 1.0f) {
+                    if (floatingCone.speed < 0.5f) { // Lowered max speed for arcade mode
                         floatingCone.speed += 0.025f;
                     }
                     PlaySound(coneDrop);
                 } else {
-                previousGameState = gameState;
                 gameState = GAME_OVER;
                 score = coneYs.size()-1;
                 PlaySound(coneFall);
@@ -282,26 +302,12 @@ bool app_loop() {
             int i = 0;
             std::for_each (coneYs.begin(), coneYs.end(), [&](Vector3 coneY)
             {
-                if (gameState != PLAY_ARCADE) {
-                    DrawCone(coneY, gameSettings.coneColor);
-                }
-                else {
-                    try {
-                        DrawCone(coneY, arcadeConeColors.at(i-1));
-                    } catch (const std::out_of_range& oor) {
-                        std::cout << "Out of Range error: " << oor.what() << std::endl;
-                    }
-                }
+                DrawCone(coneY, coneColors.at(i));
                 i++;
             });
             
-            if (gameState != PLAY_ARCADE) {
-                DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, gameSettings.coneColor);
-            }
-            else {
-                DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, arcadeConeColor);
-            }
-
+            DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, coneColor);
+        
         EndMode3D();
         
         switch(gameState) {
@@ -317,24 +323,24 @@ bool app_loop() {
                     }
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+75, 200, 50}, "Play Again") == 1) {
-                        gameState = previousGameState;
-                        ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                        gameState = gameOverReturnState;
+                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                         saveScore(highScoreName, score);
                     };
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+135, 200, 50}, "Main Menu") == 1) {
                         gameState = MAIN_MENU;
-                        ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                         saveScore(highScoreName, score);
                     };
                 } else {
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+25, 200, 50}, "Play Again") == 1) {
-                        gameState = previousGameState;
-                        ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                        gameState = gameOverReturnState;
+                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                     };
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+85, 200, 50}, "Main Menu") == 1) {
                         gameState = MAIN_MENU;
-                        ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                     };
                 }
                 
@@ -350,7 +356,6 @@ bool app_loop() {
             }
             case PLAY_ARCADE: {
                 DrawTextCentered(std::to_string(coneYs.size()-1).c_str(), screenWidth/2, 10, 50, BLACK);
-                DrawTextCentered("Arcade mode", screenWidth/2, 100, 12, BLACK);
                 break;
             }
             case PLAY_RHYTHM: {
@@ -363,7 +368,7 @@ bool app_loop() {
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2-50, 200, 50}, "Play") == 1) {
                     gameState = PLAY_MENU;
-                    ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                    ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                 };
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
                     gameState = LEADER_BOARD;
@@ -400,15 +405,18 @@ bool app_loop() {
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2-50, 200, 50}, "  Classic") == 1) {
                     gameState = PLAY_CLASSIC;
-                    ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                    gameOverReturnState = PLAY_CLASSIC;
+                    ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                 };
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+10, 200, 50}, "  Arcade") == 1) {
                     gameState = PLAY_ARCADE;
-                    ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                    gameOverReturnState = PLAY_ARCADE;
+                    ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                 };
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+70, 200, 50}, "  Rhythm") == 1) {
                     gameState = PLAY_RHYTHM;
-                    ResetGame(coneYs, camera, targetFov, floatingCone, arcadeConeColors, arcadeConeColor);
+                    gameOverReturnState = PLAY_RHYTHM;
+                    ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor);
                 };
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+130, 200, 50}, "Back") == 1) {
                     gameState = MAIN_MENU;
@@ -425,7 +433,9 @@ bool app_loop() {
                 GuiGroupBox(Rectangle{37, 50, 640, 400}, "Options");
                 
                 GuiLabel(Rectangle{62, 65, 150, 25}, "Classic Cone Color");
-                GuiToggleGroup(Rectangle{62, 90, 150, 25}, "Traffic;Yellow;Orange;Blue", &gameSettings.coneColor);
+                gameSettings.coneColorIndex = static_cast<int>(gameSettings.coneColor);
+                GuiToggleGroup(Rectangle{62, 90, 150, 25}, "Traffic;Yellow;Orange;Blue", &gameSettings.coneColorIndex);
+                gameSettings.coneColor = static_cast<ConeColor>(gameSettings.coneColorIndex);
                 
                 GuiLabel(Rectangle {207, 170, 100, 25}, "SFX Volume");
                 GuiSliderBar(Rectangle{302, 175, 120, 16}, NULL, NULL, &gameSettings.sfxVolume, 0, 1);
