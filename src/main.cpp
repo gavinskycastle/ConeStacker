@@ -23,6 +23,7 @@ struct FloatingCone {
 struct ArcadeMessage {
     std::string message;
     float time;
+    bool gold;
 };
 
 enum GameState {
@@ -131,18 +132,28 @@ void addNewArcadeCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arca
     }
     
     float deltaScore = (2.0 - fabs(floatingConeX)) * 50.0f;
-    score += deltaScore;
+    
+    ArcadeMessage message;
+    
     if (deltaScore < 20) {
-        arcadeMessages.push_back(ArcadeMessage{"Good!", 1.0f});
+        message = ArcadeMessage{"Good!", 1.0f, false};
     } else if (deltaScore < 60) {
-        arcadeMessages.push_back(ArcadeMessage{"Great!", 1.0f});
+        message = ArcadeMessage{"Great!", 1.0f, false};
     } else if (deltaScore < 90) {
-        arcadeMessages.push_back(ArcadeMessage{"Nice!", 1.0f});
+        message = ArcadeMessage{"Nice!", 1.0f, false};
     } else if (deltaScore < 95) {
-        arcadeMessages.push_back(ArcadeMessage{"Outstanding!", 1.0f});
+        message = ArcadeMessage{"Outstanding!", 1.0f, false};
     } else if (deltaScore < 100) {
-        arcadeMessages.push_back(ArcadeMessage{"Perfect!", 1.0f});
+        message = ArcadeMessage{"Perfect!", 1.0f, false};
     }
+    
+    if (arcadeConeColor == ARCADE_CONE_GOLD) {
+        message.gold = true;
+        deltaScore *= 10;
+    }
+    
+    arcadeMessages.push_back(message);
+    score += deltaScore;
 }
 
 void addNewClassicCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arcadeConeColors, ConeColor &arcadeConeColor, GameSettings &gameSettings) {
@@ -158,6 +169,7 @@ const int screenHeight = 480;
 
 Sound coneFall;
 Sound coneDrop;
+Sound goldCone;
 
 Image nateImage;
 Image classicIcon;
@@ -197,6 +209,7 @@ void init_app() {
     InitAudioDevice();
     coneFall = LoadSound("../assets/coneFall.ogg");
     coneDrop = LoadSound("../assets/coneDrop.ogg");
+    goldCone = LoadSound("../assets/gold.wav");
     
     camera.position = Vector3{ 10.0f, 10.0f, 10.0f }; // Camera position
     camera.target = Vector3{ 0.0f, 0.0f, 0.0f };      // Camera looking at point
@@ -274,6 +287,7 @@ bool app_loop() {
         } case PLAY_ARCADE: {
             if ((IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls) || (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameSettings.enableTouchscreenControls)) {
                 if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
+                    if (coneColor == ARCADE_CONE_GOLD) PlaySound(goldCone);
                     addNewArcadeCone(coneYs, coneColors, coneColor, floatingCone.x, score, arcadeMessages);
                     
                     camera.target = coneYs.back();
@@ -346,13 +360,13 @@ bool app_loop() {
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+75, 200, 50}, "Play Again") == 1) {
                         gameState = gameOverReturnState;
-                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor, score, arcadeMessages);
                         saveScore(highScoreName, score);
+                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor, score, arcadeMessages);
                     };
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+135, 200, 50}, "Main Menu") == 1) {
                         gameState = MAIN_MENU;
-                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor, score, arcadeMessages);
                         saveScore(highScoreName, score);
+                        ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor, score, arcadeMessages);
                     };
                 } else {
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
@@ -380,14 +394,22 @@ bool app_loop() {
                 DrawTextCentered(std::to_string(score).c_str(), screenWidth/2, 10, 50, BLACK);
                 // Loop through arcadeMessages and reduce their time by deltatime
                 for (int i = 0; i < arcadeMessages.size(); i++) {
-                    arcadeMessages.at(i).time -= relDt;
+                    arcadeMessages.at(i).time -= (relDt / 60.0f);
                 }
                 // Draw arcadeMessages
                 for (int i = 0; i < arcadeMessages.size(); i++) {
-                    DrawTextCentered(arcadeMessages.at(i).message.c_str(), screenWidth/2, screenHeight/2-50+(i*30), 25, BLACK);
+                    Color messageColor;
+                    if (arcadeMessages.at(i).gold) {
+                        messageColor = Color{211, 176, 56, (unsigned char)(arcadeMessages.at(i).time * 255)};
+                    } else {
+                        messageColor = Color{0, 0, 0, (unsigned char)(arcadeMessages.at(i).time * 255)};
+                    }
+                    DrawTextCentered(arcadeMessages.at(i).message.c_str(), screenWidth/2, screenHeight/2-210+(arcadeMessages.at(i).time * 50), 25, messageColor);
                 }
-                for (const auto& message : arcadeMessages) {
-                std::cout << message.message << std::endl;
+                for (int i = 0; i < arcadeMessages.size(); i++) {
+                    if (arcadeMessages.at(i).time <= 0.0f) {
+                        arcadeMessages.erase(arcadeMessages.begin()+i);
+                    }
                 }
                 break;
             }
