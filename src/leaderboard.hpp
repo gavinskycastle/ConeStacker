@@ -1,6 +1,10 @@
 #include <vector>
 #include <string>
 
+#include "main.hpp"
+
+void selectLeaderboardMode(GameState mode);
+
 std::vector<std::string> getNames();
 
 std::vector<int> getScores();

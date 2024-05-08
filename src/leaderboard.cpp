@@ -6,16 +6,45 @@
 #include <ctime>
 #include <string>
 #include <algorithm>
+
+#include "main.hpp"
+#include <iostream>
  
 std::ofstream oScoreFile;
 std::ifstream iScoreFile;
 
 // Set save location to /save/leaderboard instead if on web
 #if defined(PLATFORM_WEB)
-    const char * scoreFileLocation = "save/leaderboard";
+    std::string scoreFileLocation = "save/leaderboard";
 #else
-    const char * scoreFileLocation = "../save/leaderboard";
+    std::string scoreFileLocation = "../save/leaderboard";
 #endif
+
+void selectLeaderboardMode(GameState mode) {
+    #if defined(PLATFORM_WEB)
+        scoreFileLocation = "save/leaderboard";
+    #else
+        scoreFileLocation = "../save/leaderboard";
+    #endif
+    std::string scoreFileLocation_S = scoreFileLocation;
+    switch (mode) {
+        case PLAY_CLASSIC:
+            scoreFileLocation_S += "_classic";
+            break;
+        case PLAY_ARCADE:
+            scoreFileLocation_S += "_arcade";
+            break;
+        case PLAY_RHYTHM:
+            scoreFileLocation_S += "_rhythm";
+            break;
+        case PLAY_DUELS:
+            scoreFileLocation_S += "_duels";
+            break;
+        default:
+            break;
+    }
+    scoreFileLocation = scoreFileLocation_S;
+}
 
 void open_oScoreFile() {
     #if defined(PLATFORM_WEB)
@@ -24,7 +53,7 @@ void open_oScoreFile() {
         std::filesystem::create_directory("../save");
     #endif
     
-    oScoreFile = std::ofstream(scoreFileLocation);
+    oScoreFile = std::ofstream(scoreFileLocation.c_str());
 }
 
 void close_oScoreFile() {
@@ -34,7 +63,7 @@ void close_oScoreFile() {
 }
 
 void open_iScoreFile() {
-    iScoreFile = std::ifstream(scoreFileLocation);
+    iScoreFile = std::ifstream(scoreFileLocation.c_str());
 }
 
 void close_iScoreFile() {

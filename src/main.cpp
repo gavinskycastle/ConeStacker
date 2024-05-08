@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cmath>
 
+#include "main.hpp"
 #include "leaderboard.hpp"
 
 struct FloatingCone {
@@ -24,17 +25,6 @@ struct ArcadeMessage {
     std::string message;
     float time;
     bool gold;
-};
-
-enum GameState {
-    PLAY_CLASSIC,
-    PLAY_ARCADE,
-    PLAY_RHYTHM,
-    GAME_OVER,
-    MAIN_MENU,
-    PLAY_MENU,
-    OPTIONS,
-    LEADER_BOARD,
 };
 
 enum ConeColor {
@@ -112,6 +102,8 @@ void ResetGame(std::vector<Vector3> &coneYs, Camera &camera, float &targetFov, F
 }
 
 void addNewArcadeCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arcadeConeColors, ConeColor &arcadeConeColor, float floatingConeX, int &score, std::vector<ArcadeMessage> &arcadeMessages) {
+    ConeColor prevArcadeConeColor = arcadeConeColor;
+    
     arcadeConeColors.push_back(arcadeConeColor);
     coneYs.push_back(Vector3{0.0f, coneYs.back().y + 1.0f, 0.0f});
     
@@ -147,7 +139,7 @@ void addNewArcadeCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arca
         message = ArcadeMessage{"Perfect!", 1.0f, false};
     }
     
-    if (arcadeConeColor == ARCADE_CONE_GOLD) {
+    if (prevArcadeConeColor == ARCADE_CONE_GOLD) {
         message.gold = true;
         deltaScore *= 10;
     }
@@ -161,6 +153,13 @@ void addNewClassicCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arc
     coneYs.push_back(Vector3 {0.0f, coneYs.back().y + 1.0f, 0.0f});
     
     arcadeConeColor = gameSettings.coneColor;
+}
+
+void loadLeaderboardData(std::vector<std::string> &leaderboardNames, std::vector<int> &leaderboardScores) {
+    leaderboardNames = getNames();
+    if (leaderboardNames.size() > 10) leaderboardNames.erase(leaderboardNames.begin()+10, leaderboardNames.end());
+    leaderboardScores = getScores();
+    if (leaderboardScores.size() > 10) leaderboardScores.erase(leaderboardScores.begin()+10, leaderboardScores.end());
 }
 
 // Initialization
@@ -204,7 +203,10 @@ char highScoreName[17] = "";
 
 std::vector<std::string> leaderboardNames;
 std::vector<int> leaderboardScores;
-    
+
+GameState selectedLeaderboardMode;
+int selectedLeaderboardIndex = 0;
+
 void init_app() {
     InitAudioDevice();
     coneFall = LoadSound("../assets/coneFall.ogg");
@@ -234,6 +236,8 @@ void init_app() {
     ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor, score, arcadeMessages);
     
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second
+    
+    selectLeaderboardMode(PLAY_CLASSIC);
 }
 
 bool app_loop() {
@@ -360,11 +364,13 @@ bool app_loop() {
                     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+75, 200, 50}, "Play Again") == 1) {
                         gameState = gameOverReturnState;
+                        selectLeaderboardMode(gameOverReturnState);
                         saveScore(highScoreName, score);
                         ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor, score, arcadeMessages);
                     };
                     if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+135, 200, 50}, "Main Menu") == 1) {
                         gameState = MAIN_MENU;
+                        selectLeaderboardMode(gameOverReturnState);
                         saveScore(highScoreName, score);
                         ResetGame(coneYs, camera, targetFov, floatingCone, coneColors, coneColor, score, arcadeMessages);
                     };
@@ -427,10 +433,9 @@ bool app_loop() {
                 };
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
                     gameState = LEADER_BOARD;
-                    leaderboardNames = getNames();
-                    if (leaderboardNames.size() > 10) leaderboardNames.erase(leaderboardNames.begin()+10, leaderboardNames.end());
-                    leaderboardScores = getScores();
-                    if (leaderboardScores.size() > 10) leaderboardScores.erase(leaderboardScores.begin()+10, leaderboardScores.end());
+                    selectLeaderboardMode(PLAY_CLASSIC);
+                    selectedLeaderboardMode = PLAY_CLASSIC;
+                    loadLeaderboardData(leaderboardNames, leaderboardScores);
                 };
                 if (GuiButton(Rectangle {screenWidth/2-100, screenHeight/2+70, 200, 50}, "Options") == 1) {
                     gameState = OPTIONS;
@@ -509,7 +514,15 @@ bool app_loop() {
             case LEADER_BOARD: {
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
                 
-                GuiGroupBox(Rectangle{37, 50, 640, 400}, "Leaderboard");
+                GuiGroupBox(Rectangle{37, 20, 640, 430}, "Leaderboard");
+                
+                selectedLeaderboardIndex = static_cast<int>(selectedLeaderboardMode);
+                GuiToggleGroup(Rectangle{55, 35, 150, 25}, "Classic;Arcade", &selectedLeaderboardIndex);
+                if (static_cast<GameState>(selectedLeaderboardIndex) != selectedLeaderboardMode) {
+                    selectedLeaderboardMode = static_cast<GameState>(selectedLeaderboardIndex);
+                    selectLeaderboardMode(selectedLeaderboardMode);
+                    loadLeaderboardData(leaderboardNames, leaderboardScores);
+                }
                 
                 GuiLabel(Rectangle{92, 65, 120, 25}, "Name");
                 
