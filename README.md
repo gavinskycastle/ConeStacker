@@ -29,15 +29,15 @@ Build system and instructions copied from [SasLuca/raylib-cpp-cmake-template](ht
 8. Make the binary executable `chmod +x ConeStacker2`
 9. Run the binary with `./ConeStacker2`
 
-## Building (Windows, MinGW)
+## Building (Windows, MinGW-w64)
 
-**You need to install MinGW. Select make and developer tools in the installer** [Download MinGW here!](https://sourceforge.net/projects/mingw/)
+**You need to install MinGW-w64. Copy the folder and add C:\mingw64\bin to PATH** [Download MinGW-w64 here!](https://github.com/niXman/mingw-builds-binaries/releases)
 
 1. Clone the repository using Git. Execute this in a terminal: `git clone https://github.com/gavinskycastle/ConeStacker2.git`
 2. Cd into ConeStacker2. `cd ConeStacker2`
 3. Install the raylib git submodule using `git submodule update --init --recursive --depth=1`
 4. Make a build folder. Your builds will go here. `mkdir build; cd build`
-5. Setup CMake. **Make sure to define MinGW Makefiles if you are using MinGW!** `cmake .. -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"`
+5. Setup CMake. **Make sure to define MinGW Makefiles if you are using MinGW-w64!** `cmake .. -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"` **You might also want to [set the default generator to MinGW.](https://stackoverflow.com/a/76580126/13137729)**
 6. Make sure you have mingw32-make. If you do, just run it in the build directory and it will start compiling everything. It won't take long, and once it's finished, then
 7. Run ConeStacker2.exe! You have just compiled ConeStacker2 for Windows using MinGW.
 
