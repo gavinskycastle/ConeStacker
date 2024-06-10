@@ -28,10 +28,6 @@ add_custom_target(copy_assets
 #add_compile_options(-Wall -Wextra -pedantic)
 file(GLOB_RECURSE APP_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*)
 add_executable(${CMAKE_PROJECT_NAME} ${APP_SOURCES})
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E echo "The executable can be found at:"
-                   COMMAND ${CMAKE_COMMAND} -E echo $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
-)
 
 add_dependencies(${CMAKE_PROJECT_NAME} copy_assets)
 

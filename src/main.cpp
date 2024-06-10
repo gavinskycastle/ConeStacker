@@ -295,11 +295,11 @@ void DrawConeStack() {
     int i = 0;
     std::for_each (coneYs.begin(), coneYs.end(), [&](Vector3 coneY)
     {
-        DrawCone(coneY, gameState == PLAY_ARCADE ? coneColors.at(i) : gameSettings.coneColor);
+        DrawCone(coneY, (gameState == PLAY_ARCADE || gameOverReturnState == PLAY_ARCADE) ? coneColors.at(i) : gameSettings.coneColor);
         i++;
     });
     
-    DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, gameState == PLAY_ARCADE ? coneColor : gameSettings.coneColor);
+    DrawCone(Vector3{floatingCone.x, coneYs.back().y + floatingCone.hoverDistance, 0.0f}, (gameState == PLAY_ARCADE || gameOverReturnState == PLAY_ARCADE) ? coneColor : gameSettings.coneColor);
 }
 
 void DrawGameOver() {
