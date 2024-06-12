@@ -12,6 +12,7 @@
 
 #include "main.hpp"
 #include "leaderboard.hpp"
+#include <raymath.h>
 
 struct FloatingCone {
     float x;
@@ -24,7 +25,8 @@ struct FloatingCone {
 struct ArcadeMessage {
     std::string message;
     float time;
-    bool gold;
+    bool gold = false;
+    bool red = false;
 };
 
 enum ConeColor {
@@ -101,12 +103,8 @@ void ResetGame(std::vector<Vector3> &coneYs, Camera &camera, float &targetFov, F
     arcadeConeColor = CONE_TRAFFIC;
 }
 
-void addNewArcadeCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arcadeConeColors, ConeColor &arcadeConeColor, float floatingConeX, int &score, std::vector<ArcadeMessage> &arcadeMessages) {
-    ConeColor prevArcadeConeColor = arcadeConeColor;
-    
-    arcadeConeColors.push_back(arcadeConeColor);
-    coneYs.push_back(Vector3{0.0f, coneYs.back().y + 1.0f, 0.0f});
-    
+ConeColor randomArcadeConeColor() {
+    ConeColor arcadeConeColor;
     int randomNumber = rand() % 100;
     
     if (randomNumber < 23) {
@@ -123,20 +121,31 @@ void addNewArcadeCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arca
         arcadeConeColor = ARCADE_CONE_RED;
     }
     
+    return arcadeConeColor;
+}
+
+void addNewArcadeCone(std::vector<Vector3> &coneYs, std::vector<ConeColor> &arcadeConeColors, ConeColor &arcadeConeColor, float floatingConeX, int &score, std::vector<ArcadeMessage> &arcadeMessages) {
+    ConeColor prevArcadeConeColor = arcadeConeColor;
+    
+    arcadeConeColors.push_back(arcadeConeColor);
+    coneYs.push_back(Vector3{0.0f, coneYs.back().y + 1.0f, 0.0f});
+    
+    arcadeConeColor = randomArcadeConeColor();
+    
     float deltaScore = (2.0 - fabs(floatingConeX)) * 50.0f;
     
     ArcadeMessage message;
     
     if (deltaScore < 20) {
-        message = ArcadeMessage{"Good!", 1.0f, false};
+        message = ArcadeMessage{"Good!", 1.0f};
     } else if (deltaScore < 60) {
-        message = ArcadeMessage{"Great!", 1.0f, false};
+        message = ArcadeMessage{"Great!", 1.0f};
     } else if (deltaScore < 90) {
-        message = ArcadeMessage{"Nice!", 1.0f, false};
+        message = ArcadeMessage{"Nice!", 1.0f};
     } else if (deltaScore < 95) {
-        message = ArcadeMessage{"Outstanding!", 1.0f, false};
+        message = ArcadeMessage{"Outstanding!", 1.0f};
     } else if (deltaScore < 100) {
-        message = ArcadeMessage{"Perfect!", 1.0f, false};
+        message = ArcadeMessage{"Perfect!", 1.0f};
     }
     
     if (prevArcadeConeColor == ARCADE_CONE_GOLD) {
@@ -166,9 +175,15 @@ void loadLeaderboardData(std::vector<std::string> &leaderboardNames, std::vector
 const int screenWidth = 720;
 const int screenHeight = 480;
 
+Color backgroundColor = LIGHTGRAY;
+Color flashColor = LIGHTGRAY;
+float flashTime = 0.0f;
+float flashTimeElapsed = 0.0f;
+
 Sound coneFall;
 Sound coneDrop;
 Sound goldCone;
+Sound redCone;
 
 Image nateImage;
 Image classicIcon;
@@ -206,6 +221,20 @@ std::vector<int> leaderboardScores;
 
 GameState selectedLeaderboardMode;
 int selectedLeaderboardIndex = 0;
+
+void FlashColor(Color color, float seconds, float relDt) {
+    flashColor = color;
+    flashTime = seconds;
+    flashTimeElapsed = 0.0f;
+}
+
+void UpdateFlashColor(float relDt) {
+    backgroundColor = Color{(unsigned char)Lerp(flashColor.r, LIGHTGRAY.r, flashTimeElapsed/flashTime), 
+                            (unsigned char)Lerp(flashColor.g, LIGHTGRAY.g, flashTimeElapsed/flashTime), 
+                            (unsigned char)Lerp(flashColor.b, LIGHTGRAY.b, flashTimeElapsed/flashTime), 
+                            255};
+    flashTimeElapsed += relDt / 60.0f;
+}
 
 void UpdateGameOver(float relDt) {
     floatingCone.fallSpeed += 0.01f * relDt; // Change by deltatime
@@ -250,22 +279,50 @@ void UpdatePlayClassic(float relDt) {
 void UpdatePlayArcade(float relDt) {
     if ((IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls) || (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameSettings.enableTouchscreenControls)) {
         if (floatingCone.x < 2.0f && floatingCone.x > -2.0f) {
-            if (coneColor == ARCADE_CONE_GOLD) PlaySound(goldCone);
-            addNewArcadeCone(coneYs, coneColors, coneColor, floatingCone.x, score, arcadeMessages);
-            
-            camera.target = coneYs.back();
-            if (targetFov < 90.0f) {
-                targetFov += 1.0f * relDt; // Change by deltatime
+            if (coneColor == ARCADE_CONE_RED) {
+                PlaySound(redCone);
+                FlashColor(Color{255, 0, 0, 255}, 0.5f, relDt);
+                coneColor = randomArcadeConeColor();
+                arcadeMessages.push_back(ArcadeMessage{"Fail!", 1.0f, false, true});
+                // Remove the top 5 cones
+                for (int i = 0; i < 5; i++) {
+                    if (coneYs.size() > 1) {
+                        coneYs.pop_back();
+                        coneColors.pop_back();
+                    }
+                }
+                // Decrease the score by 250
+                if (score >= 250) {
+                    score -= 250;
+                } else {
+                    score = 0;
+                }
+            } else {
+                if (coneColor == ARCADE_CONE_GOLD) {
+                    PlaySound(goldCone);
+                    FlashColor(Color{255, 196, 0, 255}, 0.5f, relDt);
+                }
+                addNewArcadeCone(coneYs, coneColors, coneColor, floatingCone.x, score, arcadeMessages);
+                
+                camera.target = coneYs.back();
+                if (targetFov < 90.0f) {
+                    targetFov += 1.0f * relDt; // Change by deltatime
+                }
+                
+                floatingCone.x = 0.0f;
+                if (floatingCone.speed < 0.5f) { // Lowered max speed for arcade mode
+                    floatingCone.speed += 0.005f;
+                }
+                PlaySound(coneDrop);
             }
-            
-            floatingCone.x = 0.0f;
-            if (floatingCone.speed < 0.5f) { // Lowered max speed for arcade mode
-                floatingCone.speed += 0.025f;
-            }
-            PlaySound(coneDrop);
         } else {
-        gameState = GAME_OVER;
-        PlaySound(coneFall);
+            PlaySound(coneFall);
+            if (coneColor == ARCADE_CONE_RED) {
+                FlashColor(Color{0, 255, 0, 255}, 0.5f, relDt);
+                coneColor = randomArcadeConeColor();
+            } else {
+                gameState = GAME_OVER;
+            }
         }
     }
     if (floatingCone.toRight) {
@@ -357,6 +414,8 @@ void DrawArcadeScore(float relDt) {
         Color messageColor;
         if (arcadeMessages.at(i).gold) {
             messageColor = Color{211, 176, 56, (unsigned char)(arcadeMessages.at(i).time * 255)};
+        } else if (arcadeMessages.at(i).red) {
+            messageColor = Color{255, 0, 0, (unsigned char)(arcadeMessages.at(i).time * 255)};
         } else {
             messageColor = Color{0, 0, 0, (unsigned char)(arcadeMessages.at(i).time * 255)};
         }
@@ -499,6 +558,7 @@ void init_app() {
     coneFall = LoadSound("../assets/coneFall.ogg");
     coneDrop = LoadSound("../assets/coneDrop.ogg");
     goldCone = LoadSound("../assets/gold.wav");
+    redCone = LoadSound("../assets/red.wav");
     
     camera.position = Vector3{ 10.0f, 10.0f, 10.0f }; // Camera position
     camera.target = Vector3{ 0.0f, 0.0f, 0.0f };      // Camera looking at point
@@ -539,10 +599,13 @@ bool app_loop() {
     }
     
     UpdateCameraFOV();
+    if (flashTimeElapsed < flashTime) {
+        UpdateFlashColor(relDt);
+    }
     
     // Draw
     BeginDrawing();
-        ClearBackground(LIGHTGRAY);
+        ClearBackground(backgroundColor);
         
         // 3D rendering
         BeginMode3D(camera);
