@@ -2,6 +2,8 @@
 #include "helper.hpp"
 #include "main.hpp"
 
+#include <filesystem>
+
 void web_loop()
 {
     static int old_w = 0, old_h = 0;
@@ -22,7 +24,12 @@ int main(void)
     InitWindow(getBrowserWindowWidth(), getBrowserWindowHeight(), PROJECT_NAME);
 #else
     InitWindow(720, 480, "Cone Stacker 2");
-    Image windowIcon = LoadImage("../assets/icon.png");
+    Image windowIcon;
+    if (std::filesystem::exists("../assets") == false) {
+        windowIcon = LoadImage("assets/icon.png");
+    } else {
+        windowIcon = LoadImage("../assets/icon.png");
+    }
     SetWindowIcon(windowIcon);
 #endif
     // SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
