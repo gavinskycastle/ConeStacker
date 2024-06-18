@@ -26,6 +26,7 @@ Sound coneFall;
 Sound coneDrop;
 Sound goldCone;
 Sound redCone;
+Sound winSound;
 Image nateImage;
 Image classicIcon;
 Image arcadeIcon;
@@ -52,8 +53,11 @@ RenderTexture2D player2RenderTexture;
 GameInstanceState mainGameInstance;
 GameInstanceState player2GameInstance;
 
+// Duels setup
 float duelsTimer = 0.0f;
 int duelsRoundCount = 0;
+bool duelsPointAwarded = false;
+bool duelsVictorAnnounced = false;
 
 void DrawCone(Vector3 position, int color) {
     static Model trafficConeModel = LoadModel((assetPathPrefix + "trafficCone/tinker.obj").c_str());
@@ -98,7 +102,6 @@ void DrawTextCentered(const char* text, int posX, int posY, int fontSize, Color 
 
 void ResetGame(GameInstanceState &gameInstance) {
     gameInstance.score = 0;
-    gameInstance.duelsScore = 0;
     gameInstance.coneYs.clear();
     gameInstance.coneYs.push_back(Vector3{0.0f, 0.0f, 0.0f});
     gameInstance.floatingCone.x = 0.0f;
@@ -112,15 +115,11 @@ void ResetGame(GameInstanceState &gameInstance) {
     gameInstance.arcadeMessages.clear();
     gameInstance.coneColors.push_back(CONE_TRAFFIC);
     gameInstance.coneColor = CONE_TRAFFIC;
-}
-
-void InitGameInstance(GameInstanceState &gameInstance) {
     gameInstance.camera.position = Vector3{ 10.0f, 10.0f, 10.0f }; // Camera position
     gameInstance.camera.target = Vector3{ 0.0f, 0.0f, 0.0f };      // Camera looking at point
     gameInstance.camera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
     gameInstance.camera.fovy = 45.0f;                              // Camera field-of-view Y
     gameInstance.camera.projection = CAMERA_PERSPECTIVE;           // Camera projection type
-    ResetGame(gameInstance);
 }
 
 ConeColor randomArcadeConeColor() {
@@ -219,6 +218,14 @@ void FlashColor(GameInstanceState &gameInstance, Color color, float seconds, flo
     gameInstance.flashTimeElapsed = 0.0f;
 }
 
+bool PlayerPressed(GameInstanceState &gameInstance) {
+    if (gameInstance.gameState == PLAY_DUELS) {
+        return (gameInstance.player == 1 ? IsKeyPressed(KEY_LEFT_SHIFT) : IsKeyPressed(KEY_RIGHT_SHIFT)) && !gameSettings.enableTouchscreenControls;
+    } else {
+        return IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls;
+    }
+}
+
 void UpdateFlashColor(GameInstanceState &gameInstance, float relDt) {
     gameInstance.backgroundColor = Color{(unsigned char)Lerp(gameInstance.flashColor.r, LIGHTGRAY.r, gameInstance.flashTimeElapsed/gameInstance.flashTime), 
                             (unsigned char)Lerp(gameInstance.flashColor.g, LIGHTGRAY.g, gameInstance.flashTimeElapsed/gameInstance.flashTime), 
@@ -235,7 +242,7 @@ void UpdateGameOver(GameInstanceState &gameInstance, float relDt) {
 
 void UpdatePlayClassic(GameInstanceState &gameInstance, float relDt) {
     gameInstance.score = gameInstance.coneYs.size()-1;
-    if (((gameInstance.player == 1 ? IsKeyPressed(KEY_SPACE) : IsKeyPressed(KEY_ENTER)) && !gameSettings.enableTouchscreenControls) || (detectClicks(gameInstance) && gameSettings.enableTouchscreenControls)) {
+    if (PlayerPressed(gameInstance) || (detectClicks(gameInstance) && gameSettings.enableTouchscreenControls)) {
         if (gameInstance.floatingCone.x < 2.0f && gameInstance.floatingCone.x > -2.0f) {
             addNewClassicCone(gameInstance, gameSettings);
             
@@ -268,7 +275,7 @@ void UpdatePlayClassic(GameInstanceState &gameInstance, float relDt) {
 }
 
 void UpdatePlayArcade(GameInstanceState &gameInstance, float relDt) {
-    if (((gameInstance.player == 1 ? IsKeyPressed(KEY_SPACE) : IsKeyPressed(KEY_ENTER)) && !gameSettings.enableTouchscreenControls) || (detectClicks(gameInstance) && gameSettings.enableTouchscreenControls)) {
+    if (PlayerPressed(gameInstance) || (detectClicks(gameInstance) && gameSettings.enableTouchscreenControls)) {
         if (gameInstance.floatingCone.x < 2.0f && gameInstance.floatingCone.x > -2.0f) {
             if (gameInstance.coneColor == ARCADE_CONE_RED) {
                 PlaySound(redCone);
@@ -397,36 +404,53 @@ void DrawClassicScore(GameInstanceState &gameInstance) {
     }
 }
 
-void DrawArcadeScore(GameInstanceState &gameInstance, float relDt) {
-    DrawTextCentered(std::to_string(gameInstance.score).c_str(), screenWidth/2, 10, 50, BLACK);
+void DrawArcadeMessages(std::vector<ArcadeMessage> &arcadeMessages, float relDt, int x, int y) {
     // Loop through arcadeMessages and reduce their time by deltatime
-    for (int i = 0; i < gameInstance.arcadeMessages.size(); i++) {
-        gameInstance.arcadeMessages.at(i).time -= (relDt / 60.0f);
+    for (int i = 0; i < arcadeMessages.size(); i++) {
+        arcadeMessages.at(i).time -= (relDt / 60.0f);
     }
     // Draw arcadeMessages
-    for (int i = 0; i < gameInstance.arcadeMessages.size(); i++) {
+    for (int i = 0; i < arcadeMessages.size(); i++) {
         Color messageColor;
-        if (gameInstance.arcadeMessages.at(i).gold) {
-            messageColor = Color{211, 176, 56, (unsigned char)(gameInstance.arcadeMessages.at(i).time * 255)};
-        } else if (gameInstance.arcadeMessages.at(i).red) {
-            messageColor = Color{255, 0, 0, (unsigned char)(gameInstance.arcadeMessages.at(i).time * 255)};
+        if (arcadeMessages.at(i).gold) {
+            messageColor = Color{211, 176, 56, (unsigned char)(arcadeMessages.at(i).time * 255)};
+        } else if (arcadeMessages.at(i).red) {
+            messageColor = Color{255, 0, 0, (unsigned char)(arcadeMessages.at(i).time * 255)};
         } else {
-            messageColor = Color{0, 0, 0, (unsigned char)(gameInstance.arcadeMessages.at(i).time * 255)};
+            messageColor = Color{0, 0, 0, (unsigned char)(arcadeMessages.at(i).time * 255)};
         }
-        DrawTextCentered(gameInstance.arcadeMessages.at(i).message.c_str(), screenWidth/2, screenHeight/2-210+(gameInstance.arcadeMessages.at(i).time * 50), 25, messageColor);
+        DrawTextCentered(arcadeMessages.at(i).message.c_str(), x, y+(arcadeMessages.at(i).time * 50), 25, messageColor);
     }
-    for (int i = 0; i < gameInstance.arcadeMessages.size(); i++) {
-        if (gameInstance.arcadeMessages.at(i).time <= 0.0f) {
-            gameInstance.arcadeMessages.erase(gameInstance.arcadeMessages.begin()+i);
+    for (int i = 0; i < arcadeMessages.size(); i++) {
+        if (arcadeMessages.at(i).time <= 0.0f) {
+            arcadeMessages.erase(arcadeMessages.begin()+i);
         }
     }
 }
 
-void DrawDuelsScore() {
+void DrawArcadeScore(GameInstanceState &gameInstance, float relDt) {
+    DrawTextCentered(std::to_string(gameInstance.score).c_str(), screenWidth/2, 10, 50, BLACK);
+    DrawArcadeMessages(gameInstance.arcadeMessages, relDt, screenWidth/2, screenHeight/2-210);
+}
+
+void DrawDuelsScore(float relDt) {
     DrawTextCentered(std::to_string(mainGameInstance.duelsScore).c_str(), screenWidth/2-30, 10, 50, BLACK);
     DrawTextCentered(std::to_string(player2GameInstance.duelsScore).c_str(), screenWidth/2+30, 10, 50, BLACK);
     DrawRectangleLines(screenWidth/2-60, 0, 120, 60, BLACK);
     DrawLine(360, 0, 360, 480, BLACK);
+    
+    DrawArcadeMessages(mainGameInstance.duelsMessages, relDt, screenWidth/2-30, screenHeight/2-210);
+    DrawArcadeMessages(player2GameInstance.duelsMessages, relDt, screenWidth/2+30, screenHeight/2-210);
+    
+    if (duelsTimer >= 1.0f) {
+        if (mainGameInstance.duelsScore >= 5 && player2GameInstance.duelsScore < 5) {
+            DrawTextCentered("WINNER", screenWidth/4, 10, 50, DARKGREEN);
+            DrawTextCentered("LOSER", (screenWidth/2) + (screenWidth/4), 10, 50, MAROON);
+        } else if (player2GameInstance.duelsScore >= 5 && mainGameInstance.duelsScore < 5) {
+            DrawTextCentered("LOSER", screenWidth/4, 10, 50, MAROON);
+            DrawTextCentered("WINNER", (screenWidth/2) + (screenWidth/4), 10, 50, DARKGREEN);
+        }
+    }
 }
 
 void DrawMainMenu(GameInstanceState &gameInstance) {
@@ -436,7 +460,6 @@ void DrawMainMenu(GameInstanceState &gameInstance) {
     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2-50, 200, 50}, "Play") == 1) {
         gameInstance.gameState = PLAY_MENU;
-        ResetGame(gameInstance);
     };
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
         gameInstance.gameState = LEADER_BOARD;
@@ -462,6 +485,8 @@ void DrawMainMenu(GameInstanceState &gameInstance) {
         // Messages button hit
     }
     GuiDrawIcon(ICON_MAILBOX, 102, screenHeight-100, 3, GRAY);
+    
+    DrawText("Made by Gavin P - EARLY DEVELOPMENT BUILD", 5, screenHeight-20, 15, BLACK);
 }
 
 void DrawPlayMenu(GameInstanceState &gameInstance) {
@@ -472,20 +497,20 @@ void DrawPlayMenu(GameInstanceState &gameInstance) {
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2-50, 200, 50}, "  Classic") == 1) {
         gameInstance.gameState = PLAY_CLASSIC;
         gameInstance.gameOverReturnState = PLAY_CLASSIC;
-        ResetGame(gameInstance);
     };
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+10, 200, 50}, "  Arcade") == 1) {
         gameInstance.gameState = PLAY_ARCADE;
         gameInstance.gameOverReturnState = PLAY_ARCADE;
-        ResetGame(gameInstance);
     };
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+70, 200, 50}, "  Duels") == 1) {
-        InitGameInstance(gameInstance);
+        ResetGame(gameInstance);
+        ResetGame(player2GameInstance);
         gameInstance.gameState = PLAY_DUELS;
         gameInstance.gameOverReturnState = PLAY_DUELS;
         player2GameInstance.gameState = PLAY_DUELS;
         player2GameInstance.gameOverReturnState = PLAY_DUELS;
-        ResetGame(gameInstance);
+        gameInstance.duelsScore = 0;
+        player2GameInstance.duelsScore = 0;
     };
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+130, 200, 50}, "Back") == 1) {
         gameInstance.gameState = MAIN_MENU;
@@ -598,23 +623,70 @@ void UpdateGameInstance(GameInstanceState &gameInstance, RenderTexture2D &render
 }
 
 void UpdatePlayDuels(float relDt) {
-    if (mainGameInstance.gameState == GAME_OVER && player2GameInstance.gameState == GAME_OVER) {
-        duelsTimer += relDt / 60.0f;
-        if (duelsTimer >= 5.0f) {
-            
-        } else if (duelsTimer >= 2.0f) {
-            
-        } else if (duelsTimer >= 1.0f) {
-            
-        }
-    }
-    
     screenWidth = 360;
     UpdateGameInstance(mainGameInstance, player1RenderTexture, relDt);
     DrawTextureRec(player1RenderTexture.texture, Rectangle{0, 0, (float)player1RenderTexture.texture.width, (float)-player1RenderTexture.texture.height}, Vector2{0, 0}, WHITE);
     UpdateGameInstance(player2GameInstance, player2RenderTexture, relDt);
     DrawTextureRec(player2RenderTexture.texture, Rectangle{0, 0, (float)player2RenderTexture.texture.width, (float)-player2RenderTexture.texture.height}, Vector2{360, 0}, WHITE);
     screenWidth = 720;
+    
+    if (mainGameInstance.gameState == GAME_OVER && player2GameInstance.gameState == GAME_OVER) {
+        duelsTimer += relDt / 60.0f;
+        if (duelsTimer >= 5.0f) {
+            if (duelsVictorAnnounced) {
+                mainGameInstance.gameState = MAIN_MENU;
+                player2GameInstance.gameState = MAIN_MENU;
+                mainGameInstance.gameOverReturnState = MAIN_MENU;
+                player2GameInstance.gameOverReturnState = MAIN_MENU;
+                ResetGame(mainGameInstance);
+                ResetGame(player2GameInstance);
+                duelsVictorAnnounced = false;
+            } else {
+                duelsRoundCount++;
+                duelsTimer = 0.0f;
+                ResetGame(mainGameInstance);
+                ResetGame(player2GameInstance);
+                mainGameInstance.gameState = PLAY_DUELS;
+                player2GameInstance.gameState = PLAY_DUELS;
+                duelsPointAwarded = false;
+            }
+        } else if (duelsTimer >= 1.0f) {
+            if (!duelsVictorAnnounced) {
+                if (mainGameInstance.duelsScore >= 5 && player2GameInstance.duelsScore < 5) {
+                    PlaySound(winSound);
+                    duelsVictorAnnounced = true;
+                } else if (player2GameInstance.duelsScore >= 5 && mainGameInstance.duelsScore < 5) {
+                    PlaySound(winSound);
+                    duelsVictorAnnounced = true;
+                } else {
+                    DrawText(("Next round in "+std::to_string(4-(int)duelsTimer)).c_str(), 10, screenHeight-35, 25, BLACK);
+                }
+            } else {
+                DrawText(("Exiting in "+std::to_string(4-(int)duelsTimer)).c_str(), 10, screenHeight-35, 25, BLACK);
+            }
+        } else if (duelsTimer >= 0.5f) {
+            if (!duelsPointAwarded) {
+                if (mainGameInstance.score > player2GameInstance.score) {
+                    mainGameInstance.duelsScore++;
+                    mainGameInstance.duelsMessages.push_back(ArcadeMessage{"+1", 1.0f});
+                    PlaySound(goldCone);
+                    FlashColor(mainGameInstance, Color{0, 255, 0, 255}, 1.0f, relDt);
+                } else if (player2GameInstance.score > mainGameInstance.score) {
+                    player2GameInstance.duelsScore++;
+                    player2GameInstance.duelsMessages.push_back(ArcadeMessage{"+1", 1.0f});
+                    PlaySound(goldCone);
+                    FlashColor(player2GameInstance, Color{0, 255, 0, 255}, 1.0f, relDt);
+                } else {
+                    mainGameInstance.duelsMessages.push_back(ArcadeMessage{"Tie", 1.0f});
+                    player2GameInstance.duelsMessages.push_back(ArcadeMessage{"Tie", 1.0f});
+                    PlaySound(redCone);
+                    FlashColor(mainGameInstance, Color{255, 0, 0, 255}, 1.0f, relDt);
+                    FlashColor(player2GameInstance, Color{255, 0, 0, 255}, 1.0f, relDt);
+                }
+                duelsPointAwarded = true;
+            }
+        }
+    }
 }
 
 void init_app() {
@@ -627,6 +699,7 @@ void init_app() {
     coneDrop = LoadSound((assetPathPrefix + "coneDrop.ogg").c_str());
     goldCone = LoadSound((assetPathPrefix + "gold.wav").c_str());
     redCone = LoadSound((assetPathPrefix + "red.wav").c_str());
+    winSound = LoadSound((assetPathPrefix + "win.ogg").c_str());
 
     mainRenderTexture = LoadRenderTexture(screenWidth, screenHeight);
     player1RenderTexture = LoadRenderTexture(screenWidth/2, screenHeight);
@@ -634,8 +707,8 @@ void init_app() {
     
     gameSettings.coneColor = CONE_TRAFFIC;
     
-    InitGameInstance(mainGameInstance);
-    InitGameInstance(player2GameInstance);
+    ResetGame(mainGameInstance);
+    ResetGame(player2GameInstance);
     mainGameInstance.player = 1;
     player2GameInstance.player = 2;
     
@@ -664,7 +737,7 @@ bool app_loop() {
             DrawTextureRec(mainRenderTexture.texture, Rectangle{0, 0, (float)mainRenderTexture.texture.width, (float)-mainRenderTexture.texture.height}, Vector2{0, 0}, WHITE);
         } else {
             UpdatePlayDuels(relDt);
-            DrawDuelsScore();
+            DrawDuelsScore(relDt);
         }
     EndDrawing();
     

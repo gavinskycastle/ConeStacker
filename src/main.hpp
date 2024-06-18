@@ -68,6 +68,7 @@ struct GameInstanceState {
     std::vector<ArcadeMessage> arcadeMessages;
     int score = 0;
     int duelsScore = 0;
+    std::vector<ArcadeMessage> duelsMessages;
 };
 
 // Load asset and initialized stuffs here
