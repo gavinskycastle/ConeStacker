@@ -67,6 +67,7 @@ struct GameInstanceState {
     std::vector<ConeColor> coneColors = {CONE_TRAFFIC};
     std::vector<ArcadeMessage> arcadeMessages;
     int score = 0;
+    int duelsScore = 0;
 };
 
 // Load asset and initialized stuffs here
