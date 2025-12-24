@@ -35,6 +35,7 @@ Texture2D nateTexture;
 Texture2D classicIconTexture;
 Texture2D arcadeIconTexture;
 Texture2D duelsIconTexture;
+Texture2D leaderboardGreyedOutTexture;
 
 // Leaderboard/name entry setup
 bool highScoreEditMode = false;
@@ -460,12 +461,17 @@ void DrawMainMenu(GameInstanceState &gameInstance) {
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2-50, 200, 50}, "Play") == 1) {
         gameInstance.gameState = PLAY_MENU;
     };
-    if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
-        gameInstance.gameState = LEADER_BOARD;
-        selectLeaderboardMode(PLAY_CLASSIC);
-        selectedLeaderboardMode = PLAY_CLASSIC;
-        loadLeaderboardData(leaderboardNames, leaderboardScores);
-    };
+    // Grey out leaderboard button on web
+    #if !defined(PLATFORM_WEB)
+        if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+10, 200, 50}, "Leaderboard") == 1) {
+            gameInstance.gameState = LEADER_BOARD;
+            selectLeaderboardMode(PLAY_CLASSIC);
+            selectedLeaderboardMode = PLAY_CLASSIC;
+            loadLeaderboardData(leaderboardNames, leaderboardScores);
+        };
+    #else
+        DrawTexture(leaderboardGreyedOutTexture, screenWidth/2-100, screenHeight/2+10, WHITE);
+    #endif
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+70, 200, 50}, "Options") == 1) {
         gameInstance.gameState = OPTIONS;
     };
@@ -717,6 +723,8 @@ void init_app() {
     classicIcon = LoadImage((assetPathPrefix + "icons/classic.png").c_str());
     arcadeIcon = LoadImage((assetPathPrefix + "icons/arcade.png").c_str());
     duelsIcon = LoadImage((assetPathPrefix + "icons/duels.png").c_str());
+    
+    leaderboardGreyedOutTexture = LoadTexture((assetPathPrefix + "leaderboardGreyedOut.png").c_str());
     
     ImageResize(&nateImage, 576, 432);
     nateTexture = LoadTextureFromImage(nateImage);
