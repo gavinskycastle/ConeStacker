@@ -3,7 +3,7 @@ name: Web build
 on: [push, pull_request, workflow_dispatch]
 
 env:
-  CMAKE_VERSION: 3.21.1
+  CMAKE_VERSION: 4.2.1
   BUILD_TYPE: Release
 
 jobs:
@@ -137,12 +137,12 @@ jobs:
     - name: Rename html file
       run: |
           cd build/
-          mv ConeStacker2.html index.html
+          mv ConeStacker.html index.html
           cd ../
       shell: bash
     
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.config.name }}_${{ github.run_id }}_${{ env.GIT_HASH_SHORT }}
         path: |

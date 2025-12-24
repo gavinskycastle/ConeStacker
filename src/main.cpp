@@ -454,8 +454,7 @@ void DrawDuelsScore(float relDt) {
 }
 
 void DrawMainMenu(GameInstanceState &gameInstance) {
-    DrawTextCentered("Cone Stacker", screenWidth/2-35, screenHeight/2-125, 50, BLACK);
-    DrawTextCentered("2", screenWidth/2+180, screenHeight/2-145, 75, BLACK);
+    DrawTextCentered("Cone Stacker", screenWidth/2, screenHeight/2-125, 50, BLACK);
     
     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2-50, 200, 50}, "Play") == 1) {
@@ -477,21 +476,20 @@ void DrawMainMenu(GameInstanceState &gameInstance) {
         };
     #endif
     
-    if (GuiButton(Rectangle {32-2, screenHeight-100-1, 52, 52}, "") == 1) {
-        // Profile button hit
-    }
-    GuiDrawIcon(ICON_PLAYER, 32, screenHeight-100, 3, GRAY);
-    if (GuiButton(Rectangle {102-2, screenHeight-100-1, 52, 52}, "") == 1) {
-        // Messages button hit
-    }
-    GuiDrawIcon(ICON_MAILBOX, 102, screenHeight-100, 3, GRAY);
+    // if (GuiButton(Rectangle {32-2, screenHeight-100-1, 52, 52}, "") == 1) {
+    //     // Profile button hit
+    // }
+    // GuiDrawIcon(ICON_PLAYER, 32, screenHeight-100, 3, GRAY);
+    // if (GuiButton(Rectangle {102-2, screenHeight-100-1, 52, 52}, "") == 1) {
+    //     // Messages button hit
+    // }
+    // GuiDrawIcon(ICON_MAILBOX, 102, screenHeight-100, 3, GRAY);
     
-    DrawText("Made by Gavin P - EARLY DEVELOPMENT BUILD", 5, screenHeight-20, 15, BLACK);
+    DrawText("Made by Gavin P - v0.2.0", 5, screenHeight-20, 15, BLACK);
 }
 
 void DrawPlayMenu(GameInstanceState &gameInstance) {
-    DrawTextCentered("Cone Stacker", screenWidth/2-35, screenHeight/2-125, 50, BLACK);
-    DrawTextCentered("2", screenWidth/2+180, screenHeight/2-145, 75, BLACK);
+    DrawTextCentered("Cone Stacker", screenWidth/2, screenHeight/2-125, 50, BLACK);
     
     GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
     if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2-50, 200, 50}, "  Classic") == 1) {
@@ -518,6 +516,8 @@ void DrawPlayMenu(GameInstanceState &gameInstance) {
     DrawTexture(classicIconTexture, screenWidth/2-100+25, screenHeight/2-43, WHITE);
     DrawTexture(arcadeIconTexture, screenWidth/2-100+20, screenHeight/2+17, WHITE);
     DrawTexture(duelsIconTexture, screenWidth/2-100+20, screenHeight/2+77, WHITE);
+    
+    DrawText("Made by Gavin P - v0.2.0", 5, screenHeight-20, 15, BLACK);
 }
 
 void DrawOptions(GameInstanceState &gameInstance) {
