@@ -365,24 +365,37 @@ void DrawGameOver(GameInstanceState &gameInstance) {
     //DrawTextCentered("Press Space To Play Again", screenWidth/2, screenHeight/2+75, 25, BLACK);
     if (checkScore(gameInstance.score)) {
         if (gameInstance.gameOverReturnState != PLAY_DUELS) {
-            DrawTextCentered("Enter your name to submit your high score", screenWidth/2, screenHeight/2+8, 16, BLACK);
-            GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
-            if (GuiTextBox(Rectangle{static_cast<float>(screenWidth/2-60), static_cast<float>(screenHeight/2+32), 120.0f, 24.0f}, highScoreName, 16, highScoreEditMode)) {
-                highScoreEditMode = !highScoreEditMode;
-            }
-            GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
-            if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), static_cast<float>(screenHeight/2+75), 200.0f, 50.0f}, "Play Again") == 1) {
-                gameInstance.gameState = gameInstance.gameOverReturnState;
-                selectLeaderboardMode(gameInstance.gameOverReturnState);
-                saveScore(highScoreName, gameInstance.score);
-                ResetGame(gameInstance);
-            };
-            if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+135, 200, 50}, "Main Menu") == 1) {
-                gameInstance.gameState = MAIN_MENU;
-                selectLeaderboardMode(gameInstance.gameOverReturnState);
-                saveScore(highScoreName, gameInstance.score);
-                ResetGame(gameInstance);
-            };
+            #if !defined(PLATFORM_WEB)
+                DrawTextCentered("Enter your name to submit your high score", screenWidth/2, screenHeight/2+8, 16, BLACK);
+                GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
+                if (GuiTextBox(Rectangle{static_cast<float>(screenWidth/2-60), static_cast<float>(screenHeight/2+32), 120.0f, 24.0f}, highScoreName, 16, highScoreEditMode)) {
+                    highScoreEditMode = !highScoreEditMode;
+                }
+                GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
+                if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), static_cast<float>(screenHeight/2+75), 200.0f, 50.0f}, "Play Again") == 1) {
+                    gameInstance.gameState = gameInstance.gameOverReturnState;
+                    selectLeaderboardMode(gameInstance.gameOverReturnState);
+                    saveScore(highScoreName, gameInstance.score);
+                    ResetGame(gameInstance);
+                };
+                if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+135, 200, 50}, "Main Menu") == 1) {
+                    gameInstance.gameState = MAIN_MENU;
+                    selectLeaderboardMode(gameInstance.gameOverReturnState);
+                    saveScore(highScoreName, gameInstance.score);
+                    ResetGame(gameInstance);
+                };
+            #else
+                DrawTextCentered("Download the game to save your high score", screenWidth/2, screenHeight/2+8, 16, BLACK);
+                GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
+                if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+45, 200, 50}, "Play Again") == 1) {
+                    gameInstance.gameState = gameInstance.gameOverReturnState;
+                    ResetGame(gameInstance);
+                };
+                if (GuiButton(Rectangle {static_cast<float>(screenWidth/2-100), screenHeight/2+105, 200, 50}, "Main Menu") == 1) {
+                    gameInstance.gameState = MAIN_MENU;
+                    ResetGame(gameInstance);
+                };
+            #endif
         }
     } else if (gameInstance.gameOverReturnState != PLAY_DUELS) {
         GuiSetStyle(DEFAULT, TEXT_SIZE, 25);
