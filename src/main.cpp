@@ -221,7 +221,7 @@ void FlashColor(GameInstanceState &gameInstance, Color color, float seconds, flo
 
 bool PlayerPressed(GameInstanceState &gameInstance) {
     if (gameInstance.gameState == PLAY_DUELS) {
-        return (gameInstance.player == 1 ? IsKeyPressed(KEY_LEFT_SHIFT) : IsKeyPressed(KEY_RIGHT_SHIFT)) && !gameSettings.enableTouchscreenControls;
+        return (gameInstance.player == 1 ? IsKeyPressed(KEY_LEFT_SHIFT) : IsKeyPressed(KEY_ENTER)) && !gameSettings.enableTouchscreenControls;
     } else {
         return IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls;
     }
