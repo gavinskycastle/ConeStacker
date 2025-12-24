@@ -17,14 +17,14 @@ std::ifstream iScoreFile;
 #if defined(PLATFORM_WEB)
     std::string scoreFileLocation = "save/leaderboard";
 #else
-    std::string scoreFileLocation = "../save/leaderboard";
+    std::string scoreFileLocation = "./save/leaderboard";
 #endif
 
 void selectLeaderboardMode(GameState mode) {
     #if defined(PLATFORM_WEB)
         scoreFileLocation = "save/leaderboard";
     #else
-        scoreFileLocation = "../save/leaderboard";
+        scoreFileLocation = "./save/leaderboard";
     #endif
     std::string scoreFileLocation_S = scoreFileLocation;
     switch (mode) {
@@ -50,7 +50,7 @@ void open_oScoreFile() {
     #if defined(PLATFORM_WEB)
         std::filesystem::create_directory("save");
     #else
-        std::filesystem::create_directory("../save");
+        std::filesystem::create_directory("./save");
     #endif
     
     oScoreFile = std::ofstream(scoreFileLocation.c_str());
