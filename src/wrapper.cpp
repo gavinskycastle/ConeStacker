@@ -23,7 +23,11 @@ int main(void)
 #if defined(PLATFORM_WEB)
     InitWindow(getBrowserWindowWidth(), getBrowserWindowHeight(), PROJECT_NAME);
 #else
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(720, 480, "Cone Stacker");
+    //scale window size so it always appears the same on all
+    Vector2 windowScale = GetWindowScaleDPI();
+    SetWindowSize((int)(720 * windowScale.x), (int)(480 * windowScale.y));
     Image windowIcon;
     if (std::filesystem::exists("../assets") == false) {
         windowIcon = LoadImage("assets/icon.png");
