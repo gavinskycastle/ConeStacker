@@ -223,7 +223,7 @@ bool PlayerPressed(GameInstanceState &gameInstance) {
     if (gameInstance.gameState == PLAY_DUELS) {
         return (gameInstance.player == 1 ? IsKeyPressed(KEY_LEFT_SHIFT) : IsKeyPressed(KEY_ENTER)) && !gameSettings.enableTouchscreenControls;
     } else {
-        return IsKeyPressed(KEY_SPACE) && !gameSettings.enableTouchscreenControls;
+        return IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !gameSettings.enableTouchscreenControls;
     }
 }
 
